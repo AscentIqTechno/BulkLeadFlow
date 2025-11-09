@@ -1,16 +1,16 @@
-# CryptoFlow – One Page Template
+# ReachIQ – One Page Template
 #### Preview
 
- - [Demo](https://themewagon.github.io/cryptoflow/)
+ - [Demo](https://themewagon.github.io/ReachIQ/)
 
 #### Download
- - [Download from ThemeWagon](https://themewagon.com/themes/cryptoflow/)
+ - [Download from ThemeWagon](https://themewagon.com/themes/ReachIQ/)
 
 ## Getting Started
 
 1. Clone Repository
 ```
-git clone https://github.com/themewagon/cryptoflow.git
+git clone https://github.com/themewagon/ReachIQ.git
 ```
 2. Install Dependencies
 ```

@@ -4,7 +4,7 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 export default defineConfig(({ mode }) => ({
-    base: "/cryptoflow/",
+    base: "/ReachIQ/",
   server: {
     host: "::",
     port: 8080,

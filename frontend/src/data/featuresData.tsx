@@ -1,35 +1,40 @@
-import React from 'react';
-import { Activity, Lock, Zap, Compass, LineChart, Shield } from 'lucide-react';
+import { Mail, Users, BarChart3, Settings, Zap, ShieldCheck } from "lucide-react";
 
 export const features = [
   {
-    icon: <Activity className="h-6 w-6" />,
-    title: "Real-time Analytics",
-    description: "Monitor market movements with advanced charts and indicators updated in real-time."
+    icon: <Mail size={24} />,
+    title: "Automated Email Campaigns",
+    description:
+      "Create, schedule, and send personalized bulk email campaigns using your configured SMTP accounts — all within one dashboard.",
   },
   {
-    icon: <Lock className="h-6 w-6" />,
-    title: "Bank-level Security",
-    description: "Your assets are protected with military-grade encryption and multi-factor authentication."
+    icon: <Users size={24} />,
+    title: "Lead Management",
+    description:
+      "Track, manage, and segment leads generated from your email campaigns with powerful insights and filtering tools.",
   },
   {
-    icon: <Zap className="h-6 w-6" />,
-    title: "Instant Execution",
-    description: "Execute trades in milliseconds with our high-performance trading engine."
+    icon: <BarChart3 size={24} />,
+    title: "Real-Time Analytics",
+    description:
+      "Monitor email performance with open rates, clicks, and engagement data in one easy-to-understand visual dashboard.",
   },
   {
-    icon: <Compass className="h-6 w-6" />,
-    title: "Smart Portfolio",
-    description: "Optimize your crypto holdings with AI-powered portfolio suggestions."
+    icon: <Settings size={24} />,
+    title: "SMTP Configuration",
+    description:
+      "Connect multiple SMTP providers with ease — Gmail, Outlook, or custom servers — to send high-volume campaigns securely.",
   },
   {
-    icon: <LineChart className="h-6 w-6" />,
-    title: "Price Alerts",
-    description: "Never miss an opportunity with customizable price alerts and notifications."
+    icon: <Zap size={24} />,
+    title: "Smart Automation",
+    description:
+      "Automate follow-ups and workflows to improve lead conversion efficiency using ReachIQ’s smart scheduling engine.",
   },
   {
-    icon: <Shield className="h-6 w-6" />,
-    title: "Cold Storage",
-    description: "Majority of assets stored in offline cold wallets for maximum security."
-  }
+    icon: <ShieldCheck size={24} />,
+    title: "Security & Privacy",
+    description:
+      "Your data and email credentials are encrypted end-to-end. We ensure full compliance with GDPR and anti-spam standards.",
+  },
 ];

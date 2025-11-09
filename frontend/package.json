@@ -1,9 +1,9 @@
 {
-    "name": "CryptoFlow",
+    "name": "ReachIQ",
     "private": true,
     "version": "1.0.0",
     "type": "module",
-    "homepage": "https://themewagon.github.io/cryptoflow",
+    "homepage": "https://themewagon.github.io/ReachIQ",
     "scripts": {
         "dev": "vite",
         "build": "vite build",

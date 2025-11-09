@@ -1,117 +1,124 @@
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Menu, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Menu, X } from "lucide-react";
+import { Link } from "react-router-dom";
+import LoginModal from "@/components/LoginModal";
+import SignupModal from "@/components/SignupModal";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isSignupOpen, setIsSignupOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-crypto-blue/80 backdrop-blur-md py-3 shadow-lg' : 'py-6'}`}>
-      <div className="container mx-auto px-4 flex justify-between items-center">
-        <div className="flex items-center">
-          <h1 className="text-2xl font-bold text-white">
-            Crypto<span className="text-crypto-purple">Flow</span>
-          </h1>
-        </div>
-
-        {/* Desktop menu */}
-        <ul className="hidden lg:flex items-center space-x-8">
-          <li>
-            <a href="#features" className="text-gray-300 hover:text-white transition-colors">
-              Features
-            </a>
-          </li>
-          <li>
-            <a href="#how-it-works" className="text-gray-300 hover:text-white transition-colors">
-              How it works
-            </a>
-          </li>
-          <li>
-            <a href="#testimonials" className="text-gray-300 hover:text-white transition-colors">
-              Testimonials
-            </a>
-          </li>
-          <li>
-            <a href="#pricing" className="text-gray-300 hover:text-white transition-colors">
-              Pricing
-            </a>
-          </li>
-          <li>
-            <a href="#faq" className="text-gray-300 hover:text-white transition-colors">
-              FAQ
-            </a>
-          </li>
-        </ul>
-
-        <div className="hidden lg:flex items-center space-x-4">
-          <Button variant="ghost" className="text-gray-300 hover:text-white">
-            Login
-          </Button>
-          <Link to="#!">
-            <Button className="bg-crypto-purple hover:bg-crypto-dark-purple text-white w-full">Buy Now</Button>
-          </Link>
-        </div>
-
-        {/* Mobile menu button */}
-        <button className="lg:hidden text-white" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-      </div>
-
-      {/* Mobile menu */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden bg-crypto-blue/95 backdrop-blur-lg absolute top-full left-0 w-full py-4 shadow-lg">
-          <div className="container mx-auto px-4">
-            <ul className="flex flex-col space-y-4">
-              <li>
-                <a href="#features" className="text-gray-300 hover:text-white transition-colors block py-2" onClick={() => setIsMobileMenuOpen(false)}>
-                  Features
-                </a>
-              </li>
-              <li>
-                <a href="#how-it-works" className="text-gray-300 hover:text-white transition-colors block py-2" onClick={() => setIsMobileMenuOpen(false)}>
-                  How it works
-                </a>
-              </li>
-              <li>
-                <a href="#testimonials" className="text-gray-300 hover:text-white transition-colors block py-2" onClick={() => setIsMobileMenuOpen(false)}>
-                  Testimonials
-                </a>
-              </li>
-              <li>
-                <a href="#pricing" className="text-gray-300 hover:text-white transition-colors block py-2" onClick={() => setIsMobileMenuOpen(false)}>
-                  Pricing
-                </a>
-              </li>
-              <li>
-                <a href="#faq" className="text-gray-300 hover:text-white transition-colors block py-2" onClick={() => setIsMobileMenuOpen(false)}>
-                  FAQ
-                </a>
-              </li>
-              <li className="pt-4 flex flex-col space-y-3">
-                <Button variant="ghost" className="text-gray-300 hover:text-white w-full justify-start">
-                  Login
-                </Button>
-                <Link to="#!">
-                  <Button className="bg-crypto-purple hover:bg-crypto-dark-purple text-white w-full">Buy Now</Button>
-                </Link>
-              </li>
-            </ul>
+    <>
+      <nav
+        className={`fixed w-full z-50 transition-all duration-300 ${
+          isScrolled
+            ? "bg-[#0B0F19]/90 backdrop-blur-md py-3 shadow-lg"
+            : "py-6"
+        }`}
+      >
+        <div className="container mx-auto px-4 flex justify-between items-center">
+          {/* Logo */}
+          <div className="flex items-center">
+            <h1 className="text-2xl font-extrabold text-white tracking-wide">
+              Reach<span className="text-[#6C63FF]">IQ</span>
+            </h1>
           </div>
+
+          {/* Desktop Menu */}
+          <ul className="hidden lg:flex items-center space-x-8">
+            {["Features", "How it works", "Testimonials", "Pricing", "FAQ"].map(
+              (item) => (
+                <li key={item}>
+                  <a
+                    href={`#${item.toLowerCase().replace(/\s/g, "-")}`}
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    {item}
+                  </a>
+                </li>
+              )
+            )}
+          </ul>
+
+          {/* Desktop Buttons */}
+          <div className="hidden lg:flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              className="text-gray-300 hover:text-white"
+              onClick={() => setIsLoginOpen(true)}
+            >
+              Login
+            </Button>
+            <Button
+              className="bg-[#6C63FF] hover:bg-[#5A52E0] text-white w-full"
+              onClick={() => setIsSignupOpen(true)}
+            >
+              Sign Up
+            </Button>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="lg:hidden text-white"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
-      )}
-    </nav>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden bg-[#0B0F19]/95 backdrop-blur-lg absolute top-full left-0 w-full py-4 shadow-lg">
+            <div className="container mx-auto px-4">
+              <ul className="flex flex-col space-y-4">
+                {["Features", "How it works", "Testimonials", "Pricing", "FAQ"].map(
+                  (item) => (
+                    <li key={item}>
+                      <a
+                        href={`#${item.toLowerCase().replace(/\s/g, "-")}`}
+                        className="text-gray-300 hover:text-white transition-colors block py-2"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        {item}
+                      </a>
+                    </li>
+                  )
+                )}
+                <li className="pt-4 flex flex-col space-y-3">
+                  <Button
+                    variant="ghost"
+                    className="text-gray-300 hover:text-white w-full justify-start"
+                    onClick={() => setIsLoginOpen(true)}
+                  >
+                    Login
+                  </Button>
+                  <Button
+                    className="bg-[#6C63FF] hover:bg-[#5A52E0] text-white w-full"
+                    onClick={() => setIsSignupOpen(true)}
+                  >
+                    Sign Up
+                  </Button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        )}
+      </nav>
+
+      {/* Modals */}
+      <LoginModal open={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+      <SignupModal open={isSignupOpen} onClose={() => setIsSignupOpen(false)} />
+    </>
   );
 };
 

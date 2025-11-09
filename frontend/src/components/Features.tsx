@@ -1,7 +1,4 @@
-
-import { Activity, Lock, Zap, Compass, LineChart, Shield } from 'lucide-react';
-import { features } from '../data/featuresData';
-
+import { features } from "../data/featuresData";
 
 const Features = () => {
   return (
@@ -9,10 +6,10 @@ const Features = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gradient">
-            Powerful Features
+            Powerful Features of ReachIQ
           </h2>
           <p className="text-gray-400 max-w-2xl mx-auto">
-            CryptoFlow gives you the edge with advanced tools designed for both beginners and professional traders.
+            ReachIQ empowers your business with cutting-edge tools for email campaigns, lead generation, and intelligent automation.
           </p>
         </div>
 

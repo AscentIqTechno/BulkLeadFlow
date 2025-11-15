@@ -2,32 +2,35 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const authApi = createApi({
   reducerPath: "authApi",
+
   baseQuery: fetchBaseQuery({
     baseUrl: "http://localhost:4000/api",
     prepareHeaders: (headers, { getState }) => {
       const token = getState()?.auth?.token;
+
+      console.log("TOKEN FROM REDUX:", token); // Debug
+
       if (token) {
         headers.set("x-access-token", token);
       }
+
       return headers;
     },
   }),
 
+  tagTypes: ["User"],
+
   endpoints: (builder) => ({
-    // --------------------
-    // REGISTER
-    // --------------------
+
     registerUser: builder.mutation({
       query: (userData) => ({
         url: "/auth/signup",
         method: "POST",
         body: userData,
       }),
+      invalidatesTags: ["User"],
     }),
 
-    // --------------------
-    // LOGIN
-    // --------------------
     loginUser: builder.mutation({
       query: (credentials) => ({
         url: "/auth/signin",
@@ -35,39 +38,44 @@ export const authApi = createApi({
         body: credentials,
       }),
     }),
-   // --------------------
-    // LOGOUT (NEW)
-    // --------------------
+
     logoutUser: builder.mutation({
       query: () => ({
         url: "/auth/logout",
         method: "POST",
       }),
     }),
-    // --------------------
-    // FETCH ALL USERS (ADMIN PROTECTED)
-    // --------------------
+
     fetchUsers: builder.query({
-      query: () => ({
-        url: "/user/all",
-        method: "GET",
-      }),
+      query: () => "/user/all",
+      providesTags: ["User"],
     }),
 
-    // OPTIONAL: Get Single User
-    fetchUserById: builder.query({
+    updateUser: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/user/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    deleteUser: builder.mutation({
       query: (id) => ({
         url: `/user/${id}`,
-        method: "GET",
+        method: "DELETE",
       }),
+      invalidatesTags: ["User"],
     }),
+
   }),
 });
 
 export const {
   useRegisterUserMutation,
   useLoginUserMutation,
+  useLogoutUserMutation,
   useFetchUsersQuery,
-  useFetchUserByIdQuery,
-  useLogoutUserMutation
+  useUpdateUserMutation,
+  useDeleteUserMutation
 } = authApi;

@@ -1,3 +1,6 @@
+const db = require("../models");
+const User = db.user;
+
 exports.allAccess = (req, res) => {
   res.status(200).send("Public Content.");
 };
@@ -22,3 +25,55 @@ exports.moderatorBoard = (req, res) => {
   }
   res.status(200).send("Moderator Content.");
 };
+
+// ✅ Add this function
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    res.status(200).send(users);
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+};
+exports.updateUser = async (req, res) => {
+  try {
+    const { username, email, roles } = req.body;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        username,
+        email,
+        roles
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    res.status(200).send({
+      message: "User updated successfully",
+      user: updatedUser
+    });
+
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+};
+exports.deleteUser = async (req, res) => {
+  try {
+    const deletedUser = await User.findByIdAndDelete(req.params.id);
+
+    if (!deletedUser) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    res.status(200).send({ message: "User deleted successfully" });
+
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+};
+

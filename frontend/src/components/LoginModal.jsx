@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { useLoginUserMutation } from "@/redux/api/authApi";
 import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "@/redux/slices/authSlice";
 
 const LoginModal = ({ open, onClose }) => {
   if (!open) return null;
@@ -38,41 +40,39 @@ const LoginModal = ({ open, onClose }) => {
   // ---------------------------
   // SUBMIT HANDLER
   // ---------------------------
-  const handleSubmit = async (e) => {
-    e.preventDefault();
 
-    if (!validate()) {
-      toast.error("Please fix the errors!");
-      return;
-    }
 
-    try {
-      const res = await loginUser({
-        email: form.email,
-        password: form.password,
-      }).unwrap();
+const dispatch = useDispatch();
 
-      // Save token & user in localStorage
-      localStorage.setItem("reachiq_user", JSON.stringify(res));
 
-      toast.success("Login successful!");
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-      // Close modal immediately
-      onClose();
+  try {
+    const res = await loginUser({
+      email: form.email,
+      password: form.password,
+    }).unwrap();
 
-      // Redirect to dashboard
-      setTimeout(() => {
-        navigate("/ReachIQ/dashboard");
-      }, 500);
+    // Save token and user in Redux
+    dispatch(
+      setCredentials({
+        user: res,
+        token: res.accessToken,
+      })
+    );
 
-      // Optional cleanup
-      setForm({ email: "", password: "" });
-      setErrors({});
-      
-    } catch (err) {
-      toast.error(err?.data?.message || "Invalid email or password!");
-    }
-  };
+    // (Optional) Save to localStorage
+    localStorage.setItem("reachiq_user", JSON.stringify(res));
+
+    toast.success("Login successful!");
+
+    navigate("/ReachIQ/dashboard");
+
+  } catch (err) {
+    toast.error(err?.data?.message || "Invalid login");
+  }
+};
 
   return (
     <>

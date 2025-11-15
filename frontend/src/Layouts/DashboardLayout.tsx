@@ -1,11 +1,31 @@
 import React, { useState } from "react";
 import Sidebar from "@/components/Sidbar";
-import { Outlet, useLocation } from "react-router-dom";
-import { Menu } from "lucide-react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Menu, LogOut } from "lucide-react";
+import { useLogoutUserMutation } from "@/redux/api/authApi";
 
 const DashboardLayout = () => {
   const [isOpen, setIsOpen] = useState(true);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const [logoutUser] = useLogoutUserMutation();
+
+  // Logout handler
+  const handleLogout = async () => {
+    try {
+      await logoutUser().unwrap();
+
+      // Remove user/token from storage
+      localStorage.removeItem("reachiq_user");
+      localStorage.removeItem("token");
+
+      // Redirect to login
+      navigate("/ReachIQ");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   // Optional: Map paths to readable titles
   const pageTitles: Record<string, string> = {
@@ -27,7 +47,7 @@ const DashboardLayout = () => {
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Header */}
         <header className="flex items-center justify-between bg-white shadow px-6 py-4">
-          {/* Sidebar Toggle (for mobile) */}
+          {/* Sidebar Toggle */}
           <button
             className="md:hidden p-2 rounded-md hover:bg-gray-200"
             onClick={() => setIsOpen(!isOpen)}
@@ -38,7 +58,7 @@ const DashboardLayout = () => {
           {/* Page Title */}
           <h1 className="text-xl font-semibold text-gray-800">{title}</h1>
 
-          {/* Right Side (User Profile / Actions) */}
+          {/* Right Side (Profile + Logout) */}
           <div className="flex items-center gap-3">
             <img
               src="https://i.pravatar.cc/40"
@@ -48,6 +68,15 @@ const DashboardLayout = () => {
             <span className="hidden md:inline text-gray-700 font-medium">
               Admin
             </span>
+
+            {/* Logout Button */}
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1 px-3 py-2 bg-red-100 text-red-600 rounded-md hover:bg-red-200 transition"
+            >
+              <LogOut size={18} />
+              <span className="hidden md:inline">Logout</span>
+            </button>
           </div>
         </header>
 
@@ -59,7 +88,5 @@ const DashboardLayout = () => {
     </div>
   );
 };
-
-
 
 export default DashboardLayout;

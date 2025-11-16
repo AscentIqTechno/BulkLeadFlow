@@ -22,11 +22,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
 
 
 const roles = useSelector((state: any) => state.auth?.user.roles|| []);
-const isAdmin = Array.isArray(roles) && roles.includes("ROLE_ADMIN");
-console.log(isAdmin,roles)
+const isAdmin = Array.isArray(roles) && roles.includes("admin");
 
- 
- 
 
   const menuItems = [
     { name: "Dashboard", path: "/ReachIQ/dashboard/overview", icon: <Home size={18} /> },
@@ -35,12 +32,12 @@ console.log(isAdmin,roles)
     ...(isAdmin
       ? [
           { name: "Users", path: "/ReachIQ/dashboard/users", icon: <UserCog size={18} /> },
-          { name: "Email Directory", path: "/ReachIQ/dashboard/email-directory", icon: <BookUser size={18} /> },
-          { name: "Number Directory", path: "/ReachIQ/dashboard/number-directory", icon: <Phone size={18} /> },
+          // { name: "Number Directory", path: "/ReachIQ/dashboard/number-directory", icon: <Phone size={18} /> },
         ]
-      : []),
-
-    // Common Menus For All Roles
+        : []),
+        
+        // Common Menus For All Roles
+    { name: "Email Directory", path: "/ReachIQ/dashboard/email_directory", icon: <BookUser size={18} /> },
     { name: "SMTP Configuration", path: "/ReachIQ/dashboard/smtp", icon: <Settings size={18} /> },
     { name: "Email Campaigns", path: "/ReachIQ/dashboard/campaigns", icon: <Mail size={18} /> },
 

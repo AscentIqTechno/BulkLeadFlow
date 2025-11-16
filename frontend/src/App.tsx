@@ -15,6 +15,7 @@ import LeadsPage from "./pages/Leads/LeadsPage";
 import DashboardLayout from "./Layouts/DashboardLayout";
 
 import PrivateRoute from "./components/PrivateRoute";
+import EmailDirectoryList from "./pages/directory/EmailDirectoryList";
 
 const App = () => (
   <Provider store={store}>
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="smtp" element={<SmtpPage />} />
             <Route path="campaigns" element={<CampaignsPage />} />
             <Route path="leads" element={<LeadsPage />} />
+            <Route path="email_directory" element={<EmailDirectoryList />} />
           </Route>
 
           {/* 404 */}

@@ -103,12 +103,13 @@ const UsersPage = () => {
 
   if (isLoading) return <p className="text-white p-6">Loading...</p>;
 
-  const users = (data || []).map((u) => ({
-    id: u._id,
-    name: u.username,
-    email: u.email,
-    role: u.roles?.[0] || "User",
-  }));
+const users = (data || []).map((u) => ({
+  id: u._id,
+  name: u.username,
+  email: u.email,
+  // get role name if exists, fallback to 'User'
+  role: u.roles?.[0]?.name || "User",
+}));
 
   return (
     <div className="p-6 text-white">
@@ -219,7 +220,6 @@ const UsersPage = () => {
                   className="w-full p-2 bg-gray-800 border border-gray-700 rounded"
                 >
                   <option>User</option>
-                  <option>Manager</option>
                   <option>Admin</option>
                 </select>
 

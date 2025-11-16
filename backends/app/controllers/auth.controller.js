@@ -87,7 +87,7 @@ exports.signin = async (req, res) => {
       { expiresIn: 86400 }
     );
 
-    const authorities = user.roles.map((role) => "ROLE_" + role.name.toUpperCase());
+    const authorities = user.roles.map((role) => role.name);
 
     // Response
     res.status(200).send({

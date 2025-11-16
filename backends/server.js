@@ -37,11 +37,13 @@ const authRoutes = require("./app/routes/auth.routes");
 const userRoutes = require("./app/routes/user.routes");
 const smtpRoutes = require("./app/routes/smtp.routes");
 const campaignRoutes = require("./app/routes/campaign.routes")
+const emailDirectoryRoutes = require("./app/routes/emailDirectory.routes")
 
 app.use("/api/user", userRoutes);
 app.use("/api", smtpRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/complain",campaignRoutes)
+app.use("/api/email_directory",emailDirectoryRoutes)
 
 // Start Server
 const PORT = process.env.PORT || 5000;

@@ -2,10 +2,28 @@ const db = require("../models");
 const Campaign = db.campaign;
 const SmtpConfig = db.smtp;
 const nodemailer = require("nodemailer");
-
+const extractNameFromEmail = require("../helpers/extractName.helper");
+const EmailDirectory = db.emailDirectory;
 /**
  * Send campaign emails and save the campaign
  */
+
+function extractNameFromEmailJS(email) {
+  if (!email) return "";
+
+  // take part before @
+  let name = email.split("@")[0];
+
+  // remove numbers, dots, underscores, hyphens
+  name = name.replace(/[0-9._-]/g, " ").trim();
+
+  // take first word only
+  name = name.split(" ")[0];
+
+  // capitalize properly
+  return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+}
+
 
 
 exports.createAndSendCampaign = async (req, res) => {
@@ -14,16 +32,12 @@ exports.createAndSendCampaign = async (req, res) => {
     const { name, subject, smtpId, recipients, message } = req.body;
     const attachments = req.files || [];
 
-    // Normalize recipients to array
     let recipientList = [];
     if (recipients) {
       if (Array.isArray(recipients)) {
         recipientList = recipients;
       } else if (typeof recipients === "string") {
-        recipientList = recipients
-          .split(",")
-          .map((r) => r.trim())
-          .filter((r) => r);
+        recipientList = recipients.split(",").map((r) => r.trim()).filter(Boolean);
       }
     }
 
@@ -31,46 +45,53 @@ exports.createAndSendCampaign = async (req, res) => {
       return res.status(400).json({ message: "All required fields must be provided." });
     }
 
-    // Fetch SMTP config
+    // SMTP config
     const smtpConfig = await SmtpConfig.findOne({ _id: smtpId, userId });
-    if (!smtpConfig) {
-      return res.status(400).json({ message: "SMTP configuration not found" });
-    }
+    if (!smtpConfig) return res.status(400).json({ message: "SMTP configuration not found" });
 
     const transporter = nodemailer.createTransport({
       host: smtpConfig.host,
       port: smtpConfig.port,
       secure: smtpConfig.secure,
-      auth: {
-        user: smtpConfig.username,
-        pass: smtpConfig.password,
-      },
+      auth: { user: smtpConfig.username, pass: smtpConfig.password }
     });
 
     let sentCount = 0;
     const total = recipientList.length;
 
-    // Send emails one by one
     for (const email of recipientList) {
       try {
+        // 👉 JS-ONLY name extraction
+        const extractedName = extractNameFromEmailJS(email);
+
+        // 👉 Save extracted name in directory (but not used in message)
+        await EmailDirectory.findOneAndUpdate(
+          { userId, email },
+          { name: extractedName, email, userId },
+          { upsert: true }
+        );
+
+        // 👉 Send same message to everyone
         await transporter.sendMail({
           from: smtpConfig.fromEmail,
           to: email,
           subject,
           text: message,
-          attachments: attachments.map((file) => ({
-            filename: file.originalname,
-            content: file.buffer,
-          })),
+          attachments: attachments.map((f) => ({
+            filename: f.originalname,
+            content: f.buffer
+          }))
         });
+
         sentCount++;
-        console.log(`Progress: ${sentCount}/${total} emails sent`);
+        console.log(`Sent ${sentCount}/${total}`);
+
       } catch (err) {
-        console.error(`Failed to send email to ${email}:`, err.message);
+        console.error(`Failed email ${email}:`, err.message);
       }
     }
 
-    // Save campaign WITHOUT attachments
+    // Save campaign
     const campaign = new Campaign({
       userId,
       name,
@@ -78,23 +99,23 @@ exports.createAndSendCampaign = async (req, res) => {
       smtpId,
       recipients: recipientList,
       message,
-      status: "sent",
+      status: "sent"
     });
 
     const savedCampaign = await campaign.save();
+
     res.status(201).json({
       message: "Campaign sent and saved successfully",
       campaign: savedCampaign,
       totalRecipients: total,
-      sentCount,
+      sentCount
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Error sending campaign", error: err.message });
   }
 };
-
-
 
 /**
  * Fetch campaigns for logged-in user

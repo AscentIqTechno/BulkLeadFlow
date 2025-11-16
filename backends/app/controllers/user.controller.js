@@ -30,12 +30,16 @@ exports.moderatorBoard = (req, res) => {
 // ✅ Add this function
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await User.find();
+    // Populate roles to get role names
+    const users = await User.find().populate("roles", "name"); 
+    // The second parameter "name" selects only the role name field
+
     res.status(200).send(users);
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
 };
+
 exports.updateUser = async (req, res) => {
   try {
     const { username, email, roles } = req.body;

@@ -4,7 +4,7 @@ const saved = JSON.parse(localStorage.getItem("reachiq_user"));
 
 const initialState = {
   user: saved || null,
-  token: saved?.accessToken || null,
+  token: saved?.token || saved?.accessToken || null,
 };
 
 const authSlice = createSlice({
@@ -12,17 +12,28 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setCredentials: (state, action) => {
-        console.log(action,"acc")
-      state.user = action.payload.user;
-      state.token = action.payload.token;
+      const { user, token } = action.payload;
+
+      state.user = user;
+      state.token = token;
+
+      // Save to localStorage
+      localStorage.setItem(
+        "reachiq_user",
+        JSON.stringify({
+          user,
+          token,
+        })
+      );
     },
+
     logout: (state) => {
       state.user = null;
       state.token = null;
+      localStorage.removeItem("reachiq_user");
     },
   },
 });
 
 export const { setCredentials, logout } = authSlice.actions;
-
 export default authSlice.reducer;

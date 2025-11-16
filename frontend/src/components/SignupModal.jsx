@@ -97,8 +97,6 @@ const SignupModal = ({ open, onClose }) => {
         </div>
       </div>
 
-      {/* 🔔 Toast Container */}
-      <Toaster position="top-center" reverseOrder={false} />
     </>
   );
 };

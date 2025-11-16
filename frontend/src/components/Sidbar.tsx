@@ -6,9 +6,12 @@ import {
   Settings,
   Database,
   UserCog,
+  Phone,
+  BookUser,
   X,
 } from "lucide-react";
 import clsx from "clsx";
+  import { useSelector } from "react-redux";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -16,19 +19,37 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
-  const location = useLocation();
+
+
+const roles = useSelector((state: any) => state.auth?.user.roles|| []);
+const isAdmin = Array.isArray(roles) && roles.includes("ROLE_ADMIN");
+console.log(isAdmin,roles)
+
+ 
+ 
 
   const menuItems = [
     { name: "Dashboard", path: "/ReachIQ/dashboard/overview", icon: <Home size={18} /> },
-    { name: "Users", path: "/ReachIQ/dashboard/users", icon: <UserCog size={18} /> },
+
+    // ADMIN ONLY SECTION
+    ...(isAdmin
+      ? [
+          { name: "Users", path: "/ReachIQ/dashboard/users", icon: <UserCog size={18} /> },
+          { name: "Email Directory", path: "/ReachIQ/dashboard/email-directory", icon: <BookUser size={18} /> },
+          { name: "Number Directory", path: "/ReachIQ/dashboard/number-directory", icon: <Phone size={18} /> },
+        ]
+      : []),
+
+    // Common Menus For All Roles
     { name: "SMTP Configuration", path: "/ReachIQ/dashboard/smtp", icon: <Settings size={18} /> },
     { name: "Email Campaigns", path: "/ReachIQ/dashboard/campaigns", icon: <Mail size={18} /> },
-    { name: "Leads Management", path: "/ReachIQ/dashboard/leads", icon: <Database size={18} /> },
+
+
+  
   ];
 
   return (
     <>
-      {/* Overlay for mobile */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-40 z-10 md:hidden"
@@ -36,28 +57,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
         ></div>
       )}
 
-      {/* Sidebar */}
       <aside
         className={clsx(
           "fixed md:static z-20 h-full w-64 transform transition-transform duration-300 ease-in-out bg-gray-900 text-white shadow-xl",
-          {
-            "-translate-x-full md:translate-x-0": !isOpen,
-            "translate-x-0": isOpen,
-          }
+          { "-translate-x-full md:translate-x-0": !isOpen, "translate-x-0": isOpen }
         )}
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-4 py-4 border-b border-gray-700">
           <h2 className="text-xl font-semibold">ReachIQ</h2>
-          <button
-            className="md:hidden p-2 hover:bg-gray-800 rounded-md"
-            onClick={() => setIsOpen(false)}
-          >
+          <button className="md:hidden p-2 hover:bg-gray-800 rounded-md" onClick={() => setIsOpen(false)}>
             <X size={20} />
           </button>
         </div>
 
-        {/* Menu */}
         <nav className="mt-5">
           {menuItems.map((item) => (
             <Link

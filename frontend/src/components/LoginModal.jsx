@@ -145,8 +145,6 @@ const handleSubmit = async (e) => {
           </p>
         </div>
       </div>
-
-      <Toaster position="top-center" reverseOrder={false} />
     </>
   );
 };

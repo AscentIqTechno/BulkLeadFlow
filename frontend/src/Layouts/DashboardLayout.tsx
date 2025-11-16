@@ -3,11 +3,14 @@ import Sidebar from "@/components/Sidbar";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Menu, LogOut } from "lucide-react";
 import { useLogoutUserMutation } from "@/redux/api/authApi";
+import { useSelector } from "react-redux";
 
 const DashboardLayout = () => {
   const [isOpen, setIsOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
+  const user = useSelector((state: any) => state.auth?.user|| []);
+
 
   const [logoutUser] = useLogoutUserMutation();
 
@@ -66,7 +69,7 @@ const DashboardLayout = () => {
               className="w-9 h-9 rounded-full border"
             />
             <span className="hidden md:inline text-gray-700 font-medium">
-              Admin
+              {user?.username}
             </span>
 
             {/* Logout Button */}

@@ -1,5 +1,6 @@
 const db = require("../models");
 const User = db.user;
+const Role = db.role;
 
 exports.allAccess = (req, res) => {
   res.status(200).send("Public Content.");
@@ -39,12 +40,27 @@ exports.updateUser = async (req, res) => {
   try {
     const { username, email, roles } = req.body;
 
+    let roleIds = [];
+
+    if (roles) {
+      // Convert "Admin" -> "admin"
+      const roleLower = roles[0];
+
+      const foundRole = await Role.findOne({ name: roleLower });
+
+      if (!foundRole) {
+        return res.status(400).send({ message: "Invalid role selected" });
+      }
+
+      roleIds = [foundRole._id];
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
       {
         username,
         email,
-        roles
+        roles: roleIds,  // Must be ObjectId[]
       },
       { new: true }
     );
@@ -55,13 +71,14 @@ exports.updateUser = async (req, res) => {
 
     res.status(200).send({
       message: "User updated successfully",
-      user: updatedUser
+      user: updatedUser,
     });
-
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
 };
+
+
 exports.deleteUser = async (req, res) => {
   try {
     const deletedUser = await User.findByIdAndDelete(req.params.id);

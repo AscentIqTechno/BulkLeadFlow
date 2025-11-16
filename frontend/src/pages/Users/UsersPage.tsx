@@ -63,7 +63,7 @@ const UsersPage = () => {
           data: {
             username: form.name,
             email: form.email,
-            role: form.role,
+            roles: [form.role.toLowerCase()]   // FIX!
           },
         }).unwrap();
 

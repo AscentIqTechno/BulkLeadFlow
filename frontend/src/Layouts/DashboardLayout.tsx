@@ -9,8 +9,7 @@ const DashboardLayout = () => {
   const [isOpen, setIsOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
-  const user = useSelector((state: any) => state.auth?.user|| []);
-
+  const user = useSelector((state: any) => state.auth?.user || []);
 
   const [logoutUser] = useLogoutUserMutation();
 
@@ -19,27 +18,36 @@ const DashboardLayout = () => {
     try {
       await logoutUser().unwrap();
 
-      // Remove user/token from storage
       localStorage.removeItem("reachiq_user");
       localStorage.removeItem("token");
 
-      // Redirect to login
       navigate("/ReachIQ");
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
 
-  // Optional: Map paths to readable titles
-  const pageTitles: Record<string, string> = {
-    "/ReachIQ/dashboard": "Dashboard Overview",
-    "/ReachIQ/dashboard/users": "Manage Users",
-    "/ReachIQ/dashboard/smtp": "SMTP Configuration",
-    "/ReachIQ/dashboard/campaigns": "Email Campaigns",
-    "/ReachIQ/dashboard/leads": "Leads Management",
+  // 🔥 Convert URL to a readable page title dynamically
+  const getPageTitle = (path: string) => {
+    // SMS pages
+    if (path.includes("/sms_directory")) return "SMS Number Directory";
+    if (path.includes("/sms_config")) return "SMS Gateway Configuration";
+    if (path.includes("/sms_campaigns")) return "SMS Campaigns";
+
+    // Email pages
+    if (path.includes("/smtp")) return "SMTP Configuration";
+    if (path.includes("/users")) return "Manage Users";
+    if (path.includes("/campaigns")) return "Email Campaigns";
+    if (path.includes("/leads")) return "Leads Management";
+    if (path.includes("/email_directory")) return "Email Directory";
+
+    if (path === "/ReachIQ/dashboard") return "Dashboard Overview";
+
+    return "Dashboard";
   };
 
-  const title = pageTitles[location.pathname] || "Dashboard";
+  // Current dynamic title
+  const title = getPageTitle(location.pathname);
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -61,7 +69,7 @@ const DashboardLayout = () => {
           {/* Page Title */}
           <h1 className="text-xl font-semibold text-gray-800">{title}</h1>
 
-          {/* Right Side (Profile + Logout) */}
+          {/* Right Side */}
           <div className="flex items-center gap-3">
             <img
               src="https://i.pravatar.cc/40"
@@ -72,7 +80,7 @@ const DashboardLayout = () => {
               {user?.username}
             </span>
 
-            {/* Logout Button */}
+            {/* Logout */}
             <button
               onClick={handleLogout}
               className="flex items-center gap-1 px-3 py-2 bg-red-100 text-red-600 rounded-md hover:bg-red-200 transition"

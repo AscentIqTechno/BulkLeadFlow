@@ -17,10 +17,15 @@ import DashboardLayout from "./Layouts/DashboardLayout";
 import PrivateRoute from "./components/PrivateRoute";
 import EmailDirectoryList from "./pages/directory/EmailDirectoryList";
 
+// ⭐ NEW WHATSAPP PAGES
+import SmsGatewayConfigPage from "./pages/SMS/SmsGatewayConfigPage";
+import SmsSendPage from "./pages/SMS/SmsSendPage";
+import SmsNumberDirectoryPage from "./pages/SMS/SmsNumberDirectoryPage";
+
 const App = () => (
   <Provider store={store}>
-    {/* Global Toaster (react-hot-toast) */}
-    <Toaster position="top-right" />   {/* ✔ Works everywhere */}
+    {/* Global Toaster */}
+    <Toaster position="top-right" />
 
     <TooltipProvider>
       <BrowserRouter>
@@ -45,6 +50,11 @@ const App = () => (
             <Route path="campaigns" element={<CampaignsPage />} />
             <Route path="leads" element={<LeadsPage />} />
             <Route path="email_directory" element={<EmailDirectoryList />} />
+
+            {/* ⭐ NEW WHATSAPP ROUTES */}
+            <Route path="sms_config" element={<SmsGatewayConfigPage />} />
+            <Route path="sms_campaigns" element={<SmsSendPage />} />
+            <Route path="sms_directory" element={<SmsNumberDirectoryPage />} />
           </Route>
 
           {/* 404 */}

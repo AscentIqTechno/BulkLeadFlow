@@ -11,6 +11,9 @@ db.role = require("./role.model");
 db.smtp = require("./smtp.model");
 db.campaign = require("./campaign.model");
 db.emailDirectory = require("./EmailDirectory.model");  // <-- ADD THIS
+db.SmsGatewayConfig = require("./SmsGatewayConfig.model")
+db.numberDirectory = require("./numberDirectory.model");
+
 
 db.ROLES = ["user", "admin", "moderator"];
 

@@ -40,3 +40,14 @@
 .read-the-docs {
   color: #888;
 }
+
+textarea,
+select {
+  background-color: #1f2937;
+  color: black;
+  border: 1px solid #374151;
+}
+
+input, textarea::placeholder {
+  color: black;
+}

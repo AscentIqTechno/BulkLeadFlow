@@ -1,6 +1,7 @@
 import React from "react";
 import { useGetMyCampaignsQuery, useDeleteCampaignMutation } from "@/redux/api/campaignApi";
 import { toast } from "react-hot-toast";
+import { Trash2 } from "lucide-react";
 
 const CampaignList = () => {
   const { data, isLoading, isError } = useGetMyCampaignsQuery(null);
@@ -71,7 +72,7 @@ const CampaignList = () => {
                       onClick={() => handleDelete(c._id)}
                       className="text-red-400 hover:text-red-300 text-sm"
                     >
-                      Delete ✖
+                      <Trash2 size={18} className="text-red-400" />
                     </button>
                   </td>
                 </tr>

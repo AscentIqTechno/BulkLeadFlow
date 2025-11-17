@@ -1,3 +1,40 @@
+// import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+
+// export const emailDirectoryApi = createApi({
+//   reducerPath: "emailDirectoryApi",
+//   baseQuery: fetchBaseQuery({
+//     baseUrl: "http://localhost:4000/api/email_directory",
+//     prepareHeaders: (headers, { getState }) => {
+//       const token = (getState() as any)?.auth?.token;
+//       if (token) headers.set("x-access-token", token);
+//       return headers;
+//     },
+//   }),
+//   tagTypes: ["EmailDirectory"],
+//   endpoints: (builder) => ({
+//     getMyEmailList: builder.query<any[], void>({
+//       query: () => "/my", // GET /my
+//       providesTags: ["EmailDirectory"],
+//     }),
+//     getAllEmailList: builder.query<any[], void>({
+//       query: () => "/all", // GET /all (admin only)
+//       providesTags: ["EmailDirectory"],
+//     }),
+//     deleteEmail: builder.mutation({
+//       query: (id: string) => ({
+//         url: `/${id}`,
+//         method: "DELETE",
+//       }),
+//       invalidatesTags: ["EmailDirectory"], // refresh list after deletion
+//     }),
+//   }),
+// });
+
+// export const { 
+//   useGetMyEmailListQuery, 
+//   useGetAllEmailListQuery, 
+//   useDeleteEmailMutation 
+// } = emailDirectoryApi;
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const emailDirectoryApi = createApi({
@@ -12,26 +49,68 @@ export const emailDirectoryApi = createApi({
   }),
   tagTypes: ["EmailDirectory"],
   endpoints: (builder) => ({
+    // GET /my
     getMyEmailList: builder.query<any[], void>({
-      query: () => "/my", // GET /my
+      query: () => "/my",
       providesTags: ["EmailDirectory"],
     }),
+
+    // GET /all
     getAllEmailList: builder.query<any[], void>({
-      query: () => "/all", // GET /all (admin only)
+      query: () => "/all",
       providesTags: ["EmailDirectory"],
     }),
+
+    // POST /add
+    addEmail: builder.mutation({
+      query: (data: { name: string; email: string }) => ({
+        url: "/add",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["EmailDirectory"],
+    }),
+
+    // PUT /:id
+    updateEmail: builder.mutation({
+      query: ({ id, ...data }: { id: string; name: string; email: string }) => ({
+        url: `/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["EmailDirectory"],
+    }),
+
+    // DELETE /:id
     deleteEmail: builder.mutation({
       query: (id: string) => ({
         url: `/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["EmailDirectory"], // refresh list after deletion
+      invalidatesTags: ["EmailDirectory"],
+    }),
+
+    // POST /bulk
+    bulkImportEmail: builder.mutation({
+      query: (file: File) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        return {
+          url: "/bulk",
+          method: "POST",
+          body: formData,
+        };
+      },
+      invalidatesTags: ["EmailDirectory"],
     }),
   }),
 });
 
-export const { 
-  useGetMyEmailListQuery, 
-  useGetAllEmailListQuery, 
-  useDeleteEmailMutation 
+export const {
+  useGetMyEmailListQuery,
+  useGetAllEmailListQuery,
+  useAddEmailMutation,
+  useUpdateEmailMutation,
+  useDeleteEmailMutation,
+  useBulkImportEmailMutation,
 } = emailDirectoryApi;

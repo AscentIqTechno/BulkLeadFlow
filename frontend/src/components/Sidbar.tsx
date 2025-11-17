@@ -1,17 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Home,
   Mail,
   Settings,
-  Database,
   UserCog,
   Phone,
   BookUser,
+  ChevronDown,
+  ChevronRight,
   X,
 } from "lucide-react";
 import clsx from "clsx";
-  import { useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -19,31 +20,13 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
+  const location = useLocation();
+  const roles = useSelector((state: any) => state.auth?.user.roles || []);
+  const isAdmin = Array.isArray(roles) && roles.includes("admin");
 
-
-const roles = useSelector((state: any) => state.auth?.user.roles|| []);
-const isAdmin = Array.isArray(roles) && roles.includes("admin");
-
-
-  const menuItems = [
-    { name: "Dashboard", path: "/ReachIQ/dashboard/overview", icon: <Home size={18} /> },
-
-    // ADMIN ONLY SECTION
-    ...(isAdmin
-      ? [
-          { name: "Users", path: "/ReachIQ/dashboard/users", icon: <UserCog size={18} /> },
-          // { name: "Number Directory", path: "/ReachIQ/dashboard/number-directory", icon: <Phone size={18} /> },
-        ]
-        : []),
-        
-        // Common Menus For All Roles
-    { name: "Email Directory", path: "/ReachIQ/dashboard/email_directory", icon: <BookUser size={18} /> },
-    { name: "SMTP Configuration", path: "/ReachIQ/dashboard/smtp", icon: <Settings size={18} /> },
-    { name: "Email Campaigns", path: "/ReachIQ/dashboard/campaigns", icon: <Mail size={18} /> },
-
-
-  
-  ];
+  // Collapsible States
+  const [openEmail, setOpenEmail] = useState(true);
+  const [openSms, setOpenSms] = useState(false);
 
   return (
     <>
@@ -67,23 +50,146 @@ const isAdmin = Array.isArray(roles) && roles.includes("admin");
           </button>
         </div>
 
-        <nav className="mt-5">
-          {menuItems.map((item) => (
-            <Link
-              key={item.name}
-              to={item.path}
-              className={clsx(
-                "flex items-center gap-3 px-5 py-3 rounded-md transition-colors duration-200",
-                location.pathname === item.path
-                  ? "bg-gray-800 text-white font-medium"
-                  : "text-gray-300 hover:bg-gray-800 hover:text-white"
-              )}
-              onClick={() => setIsOpen(false)}
+        <nav className="mt-4 px-2">
+          {/* Dashboard */}
+          <Link
+            to="/ReachIQ/dashboard/overview"
+            className={clsx(
+              "flex items-center gap-3 px-4 py-3 rounded-md",
+              location.pathname.includes("/overview")
+                ? "bg-gray-800 text-white"
+                : "text-gray-300 hover:bg-gray-800"
+            )}
+            onClick={() => setIsOpen(false)}
+          >
+            <Home size={18} />
+            <span>Dashboard</span>
+          </Link>
+
+          {/* ADMIN ONLY */}
+          {isAdmin && (
+            <>
+              <Link
+                to="/ReachIQ/dashboard/users"
+                className={clsx(
+                  "flex items-center gap-3 px-4 py-3 rounded-md",
+                  location.pathname.includes("/users")
+                    ? "bg-gray-800 text-white"
+                    : "text-gray-300 hover:bg-gray-800"
+                )}
+              >
+                <UserCog size={18} />
+                <span>User Management</span>
+              </Link>
+            </>
+          )}
+
+          {/* Email Collapsible Section */}
+          <div className="mt-3">
+            <button
+              className="flex items-center justify-between w-full px-4 py-3 text-left text-gray-300 hover:bg-gray-800 rounded-md"
+              onClick={() => setOpenEmail(!openEmail)}
             >
-              {item.icon}
-              <span>{item.name}</span>
-            </Link>
-          ))}
+              <span className="flex items-center gap-3">
+                <Mail size={18} /> Email Operations
+              </span>
+              {openEmail ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </button>
+
+            {openEmail && (
+              <div className="ml-8 mt-2 space-y-2">
+                <Link
+                  to="/ReachIQ/dashboard/email_directory"
+                  className={clsx(
+                    "block text-sm px-3 py-2 rounded-md",
+                    location.pathname.includes("/email_directory")
+                      ? "bg-gray-800 text-white"
+                      : "text-gray-400 hover:bg-gray-800"
+                  )}
+                >
+                  Email Directory
+                </Link>
+
+                <Link
+                  to="/ReachIQ/dashboard/smtp"
+                  className={clsx(
+                    "block text-sm px-3 py-2 rounded-md",
+                    location.pathname.includes("/smtp")
+                      ? "bg-gray-800 text-white"
+                      : "text-gray-400 hover:bg-gray-800"
+                  )}
+                >
+                  SMTP Configuration
+                </Link>
+
+                <Link
+                  to="/ReachIQ/dashboard/campaigns"
+                  className={clsx(
+                    "block text-sm px-3 py-2 rounded-md",
+                    location.pathname.includes("/campaigns")
+                      ? "bg-gray-800 text-white"
+                      : "text-gray-400 hover:bg-gray-800"
+                  )}
+                >
+                  Email Campaigns
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* SMS Collapsible Section */}
+          <div className="mt-3">
+            <button
+              className="flex items-center justify-between w-full px-4 py-3 text-left text-gray-300 hover:bg-gray-800 rounded-md"
+              onClick={() => setOpenSms(!openSms)}
+            >
+              <span className="flex items-center gap-3">
+                <Phone size={18} /> SMS Operations
+              </span>
+              {openSms ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </button>
+
+            {openSms && (
+              <div className="ml-8 mt-2 space-y-2">
+                <Link
+                  to="/ReachIQ/dashboard/sms_directory"
+                  className={clsx(
+                    "block text-sm px-3 py-2 rounded-md",
+                    location.pathname.includes("/sms_directory")
+                      ? "bg-gray-800 text-white"
+                      : "text-gray-400 hover:bg-gray-800"
+                  )}
+                >
+                  SMS Number Directory
+                </Link>
+
+                <Link
+                  to="/ReachIQ/dashboard/sms_config"
+                  className={clsx(
+                    "block text-sm px-3 py-2 rounded-md",
+                    location.pathname.includes("/sms_config")
+                      ? "bg-gray-800 text-white"
+                      : "text-gray-400 hover:bg-gray-800"
+                  )}
+                >
+                  SMS Gateway Configuration
+                </Link>
+
+                <Link
+                  to="/ReachIQ/dashboard/sms_campaigns"
+                  className={clsx(
+                    "block text-sm px-3 py-2 rounded-md",
+                    location.pathname.includes("/sms_campaigns")
+                      ? "bg-gray-800 text-white"
+                      : "text-gray-400 hover:bg-gray-800"
+                  )}
+                >
+                  SMS Campaigns
+                </Link>
+              </div>
+            )}
+          </div>
+
         </nav>
       </aside>
     </>

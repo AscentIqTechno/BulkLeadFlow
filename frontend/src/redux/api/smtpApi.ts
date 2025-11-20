@@ -6,12 +6,8 @@ export const smtpApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: "http://localhost:4000/api",
     prepareHeaders: (headers, { getState }) => {
-      const token = getState()?.auth?.token;
-
-      if (token) {
-        headers.set("x-access-token", token);
-      }
-
+      const token = (getState() as any)?.auth?.token;
+      if (token) headers.set("x-access-token", token);
       return headers;
     },
   }),

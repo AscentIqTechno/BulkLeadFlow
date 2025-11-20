@@ -1,7 +1,7 @@
 import { Toaster } from "react-hot-toast";     // ✅ using ONLY react-hot-toast
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Provider } from "react-redux";
-import { store } from "./redux/store";
+import { store } from "./redux/store"; // ✅ works because store.ts exists
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Index from "./pages/Index";

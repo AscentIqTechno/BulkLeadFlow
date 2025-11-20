@@ -27,6 +27,11 @@ mongoose.connect(process.env.MONGODB_URL, {
   process.exit(1);
 });
 
+app.use((req, res, next) => {
+  res.set("Cache-Control", "no-store");
+  next();
+});
+
 // Test Route
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to ReachIQ Node.js + MongoDB Atlas API" });
@@ -38,14 +43,18 @@ const campaignRoutes = require("./app/routes/campaign.routes");
 const emailDirectoryRoutes = require("./app/routes/emailDirectory.routes");
 const smsRoutes = require("./app/routes/SmsGatewayConfig.routes");
 const numberDirectoryRoutes = require("./app/routes/numberDirectory.routes"); // <-- ADDED
+const smsCampaignRoutes = require("./app/routes/sms_campaign.routes");
+
+app.use("/api/sms_campaign", smsCampaignRoutes);
 
 app.use("/api/user", userRoutes);
 app.use("/api", smtpRoutes);
 app.use("/api/auth", authRoutes);
-app.use("/api/complain", campaignRoutes);
+app.use("/api", campaignRoutes);
 app.use("/api/email_directory", emailDirectoryRoutes);
 app.use("/api", smsRoutes);
-app.use("/api/number_directory", numberDirectoryRoutes); // <-- ADDED
+app.use("/api/number_directory", numberDirectoryRoutes);
+
 
 
 // Start Server
@@ -53,6 +62,7 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
+
 // const express = require("express");
 // const axios = require("axios");
 // const cors = require("cors");

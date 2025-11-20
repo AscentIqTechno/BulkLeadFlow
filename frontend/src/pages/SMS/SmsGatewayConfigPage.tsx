@@ -1,5 +1,4 @@
 import React, { useState, ChangeEvent } from "react";
-import axios from "axios";
 import { toast } from "react-hot-toast";
 import {
   useAddSmsConfigMutation,
@@ -22,7 +21,7 @@ interface FormState {
   contactNumber: string;
   ip: string;
   port: string;
-  testNumber: string;
+  testNumber?: string;
 }
 
 interface ErrorState {
@@ -39,92 +38,67 @@ const SmsGatewayConfigPage: React.FC = () => {
   const [updateConfig] = useUpdateSmsConfigMutation();
   const [deleteConfig] = useDeleteSmsConfigMutation();
 
+  const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [loadingTest, setLoadingTest] = useState<boolean>(false);
 
   const [form, setForm] = useState<FormState>({
     username: "",
     contactNumber: "",
     ip: "",
-    port: "",
-    testNumber: "",
+    port: "8080",
   });
 
   const [errors, setErrors] = useState<ErrorState>({});
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    setErrors({ ...errors, [e.target.name]: "" });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  const validate = (isTest: boolean = false) => {
-    let err: ErrorState = {};
-
-    if (!form.username.trim()) err.username = "User Name is required";
-    if (!form.contactNumber.trim()) err.contactNumber = "Contact Number is required";
-    if (!form.ip.trim()) err.ip = "Phone IP is required";
-    if (!form.port.trim() || isNaN(Number(form.port))) err.port = "Valid Port is required";
-
-    if (isTest && !form.testNumber.trim()) err.testNumber = "Test Number is required";
-
+  const validate = () => {
+    const err: ErrorState = {};
+    if (!form.username?.trim()) err.username = "User Name is required";
+    if (!form.contactNumber?.trim()) err.contactNumber = "Contact Number is required";
+    if (!form.ip?.trim()) err.ip = "Phone IP is required";
+    if (!form.port?.trim() || isNaN(Number(form.port))) err.port = "Valid Port is required";
     setErrors(err);
     return Object.keys(err).length === 0;
   };
 
-  const handleTest = async () => {
-    if (!validate(true)) return;
-
-    setLoadingTest(true);
-    try {
-      const encodedIP = encodeURIComponent(form.ip);
-      const encodedPort = encodeURIComponent(form.port);
-      const url = `http://${encodedIP}:${encodedPort}/send-sms`;
-
-      await axios.post(url, {
-        phone: form.testNumber,
-        message: "Test SMS from Gateway",
-      });
-
-      toast.success("Test SMS sent successfully!");
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to send test SMS. Check IP/Port and phone connectivity.");
-    } finally {
-      setLoadingTest(false);
-    }
-  };
-
   const handleSave = async () => {
+    console.log("ffff")
     if (!validate()) return;
-
     try {
       if (editingId) {
-        await updateConfig({ id: editingId, ...form }).unwrap();
+        // Only send the fields your backend expects (exclude testNumber)
+        await updateConfig({ id: editingId, username: form.username, contactNumber: form.contactNumber, ip: form.ip, port: form.port }).unwrap();
         toast.success("Gateway configuration updated!");
       } else {
-        await addConfig(form).unwrap();
+        await addConfig({ username: form.username, contactNumber: form.contactNumber, ip: form.ip, port: form.port }).unwrap();
         toast.success("Gateway configuration saved!");
       }
-
-      setForm({ username: "", contactNumber: "", ip: "", port: "8080", testNumber: "" });
+      setForm({ username: "", contactNumber: "", ip: "", port: "8080" });
       setEditingId(null);
+      setShowModal(false);
       refetch();
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to save configuration");
     }
   };
 
-  const handleEdit = (item: SmsConfig) => {
-    setEditingId(item._id);
-    setForm({
-      username: item.username,
-      contactNumber: item.contactNumber,
-      ip: item.ip,
-      port: item.port,
-      testNumber: "",
-    });
-    toast("Editing mode enabled", { icon: "✏️" });
-  };
+const handleEdit = (item: SmsConfig) => {
+  setForm({
+    username: item.username,
+    contactNumber: item.contactNumber,
+    ip: item.ip,
+    port: item.port?.toString() || "8080", // convert number to string
+  });
+  setEditingId(item._id);
+  setErrors({});
+  setShowModal(true);
+};
+
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure?")) return;
@@ -138,96 +112,23 @@ const SmsGatewayConfigPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 min-h-screen text-white flex gap-6">
-      {/* LEFT FORM */}
-      <div className="flex-1 bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-md">
-        <h3 className="text-xl font-semibold mb-4">
-          {editingId ? "Edit SMS Gateway" : "Add SMS Gateway"}
-        </h3>
-
-        <div className="space-y-4">
-          {/* USERNAME */}
-          <div className="text-gray-700">
-            <label className="text-gray-300">User Name</label>
-            <input
-              type="text"
-              name="username"
-              value={form.username}
-              onChange={handleChange}
-              placeholder="John Doe"
-              className={`w-full mt-1 bg-gray-100 border ${
-                errors.username ? "border-red-500" : "border-gray-700"
-              } px-3 py-2 rounded-lg`}
-            />
-            {errors.username && <p className="text-red-500 text-sm mt-1">{errors.username}</p>}
-          </div>
-
-          {/* CONTACT NUMBER */}
-          <div className="text-gray-700">
-            <label className="text-gray-300">Contact Number</label>
-            <input
-              type="text"
-              name="contactNumber"
-              value={form.contactNumber}
-              onChange={handleChange}
-              placeholder="+919876543210"
-              className={`w-full mt-1 bg-gray-100 border ${
-                errors.contactNumber ? "border-red-500" : "border-gray-700"
-              } px-3 py-2 rounded-lg`}
-            />
-            {errors.contactNumber && (
-              <p className="text-red-500 text-sm mt-1">{errors.contactNumber}</p>
-            )}
-          </div>
-
-          {/* IP */}
-          <div className="text-gray-700">
-            <label className="text-gray-300">Phone IP</label>
-            <input
-              type="text"
-              name="ip"
-              value={form.ip}
-              onChange={handleChange}
-              placeholder="192.168.101.121"
-              className={`w-full mt-1 bg-gray-100 border ${
-                errors.ip ? "border-red-500" : "border-gray-700"
-              } px-3 py-2 rounded-lg`}
-            />
-            {errors.ip && <p className="text-red-500 text-sm mt-1">{errors.ip}</p>}
-          </div>
-
-          {/* PORT */}
-          <div className="text-gray-700">
-            <label className="text-gray-300">Port</label>
-            <input
-              type="text"
-              name="port"
-              value={form.port}
-              onChange={handleChange}
-              placeholder="8080"
-              className={`w-full mt-1 bg-gray-100 border ${
-                errors.port ? "border-red-500" : "border-gray-700"
-              } px-3 py-2 rounded-lg`}
-            />
-            {errors.port && <p className="text-red-500 text-sm mt-1">{errors.port}</p>}
-          </div>
-
-          {/* BUTTONS */}
-          <div className="flex gap-2">
-            <button
-              onClick={handleSave}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded-lg"
-            >
-              Save Configuration
-            </button>
-          </div>
-
-        </div>
-      </div>
-
-      {/* RIGHT TABLE */}
+    <div className=" min-h-screen text-white flex gap-6">
+      {/* TABLE */}
       <div className="flex-1 bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-md overflow-x-auto">
-        <h4 className="font-semibold mb-4">Saved SMS Gateways</h4>
+        <div className="flex justify-between mb-4">
+          <h4 className="font-semibold">Saved SMS Gateways</h4>
+          <button
+            className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg"
+            onClick={() => {
+              setShowModal(true);
+              setEditingId(null);
+              setForm({ username: "", contactNumber: "", ip: "", port: "8080" });
+              setErrors({});
+            }}
+          >
+            Add Gateway
+          </button>
+        </div>
 
         {configs.length > 0 ? (
           <table className="min-w-full text-left text-white">
@@ -240,15 +141,13 @@ const SmsGatewayConfigPage: React.FC = () => {
                 <th className="px-4 py-2">Action</th>
               </tr>
             </thead>
-
             <tbody>
-              {configs.map((c: SmsConfig) => (
+              {configs.map((c) => (
                 <tr key={c._id} className="border-b border-gray-700 hover:bg-gray-700">
                   <td className="px-4 py-2">{c.username}</td>
                   <td className="px-4 py-2">{c.contactNumber}</td>
                   <td className="px-4 py-2">{c.ip}</td>
                   <td className="px-4 py-2">{c.port}</td>
-
                   <td className="px-4 py-2 flex gap-2">
                     <Edit
                       className="cursor-pointer text-blue-400 hover:text-blue-200"
@@ -269,6 +168,71 @@ const SmsGatewayConfigPage: React.FC = () => {
           <p className="text-gray-400">No SMS Gateway configured</p>
         )}
       </div>
+
+      {/* ADD / EDIT MODAL */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-xl w-96 border border-gray-700">
+            <h3 className="text-white text-lg mb-4">{editingId ? "Edit SMS Gateway" : "Add SMS Gateway"}</h3>
+            <div className="space-y-4">
+              {["username", "contactNumber", "ip", "port"].map((field) => (
+                <div key={field}>
+                  <label className="text-gray-300">
+                    {field === "username"
+                      ? "User Name"
+                      : field === "contactNumber"
+                        ? "Contact Number"
+                        : field === "ip"
+                          ? "Phone IP"
+                          : "Port"}
+                  </label>
+                  <input
+                    type="text"
+                    name={field}
+                    value={(form as any)[field]}
+                    onChange={handleChange}
+                    placeholder={
+                      field === "username"
+                        ? "John Doe"
+                        : field === "contactNumber"
+                          ? "+919876543210"
+                          : field === "ip"
+                            ? "192.168.101.121"
+                            : "8080"
+                    }
+                    className={`w-full mt-1 bg-gray-100 text-black px-3 py-2 rounded-lg border ${(errors as any)[field] ? "border-red-500" : "border-gray-700"
+                      }`}
+                  />
+                  {(errors as any)[field] && (
+                    <p className="text-red-500 text-sm mt-1">{(errors as any)[field]}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-between gap-3 mt-5">
+              <button
+                onClick={() => {
+                  setShowModal(false);
+                  setEditingId(null);
+                  setForm({ username: "", contactNumber: "", ip: "", port: "8080" });
+                  setErrors({});
+                }}
+                className="px-4 py-2 bg-gray-600 rounded-lg"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleSave}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg"
+              >
+                {editingId ? "Update" : "Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

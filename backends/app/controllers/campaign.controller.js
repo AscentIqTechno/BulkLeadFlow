@@ -123,6 +123,7 @@ exports.createAndSendCampaign = async (req, res) => {
 exports.getMyCampaigns = async (req, res) => {
   try {
     const userId = req.userId;
+    console.log(userId,"working")
     const campaigns = await Campaign.find({ userId })
       .populate("smtpId", "host port username fromEmail secure")
       .sort({ createdAt: -1 });

@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const campaignApi = createApi({
   reducerPath: "campaignApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:4000/api/complain",
+    baseUrl: "http://localhost:4000/api",
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as any)?.auth?.token;
       if (token) {
@@ -15,22 +15,22 @@ export const campaignApi = createApi({
   tagTypes: ["Campaign"],
   endpoints: (builder) => ({
     createCampaign: builder.mutation({
-      query: (data) => ({
-        url: "/",
+      query: (formData) => ({
+        url: "/campaign",
         method: "POST",
-        body: data,
+        body: formData,        // MUST be FormData
       }),
       invalidatesTags: ["Campaign"],
     }),
 
-  getMyCampaigns: builder.query({
-  query: () => "/",
-  providesTags: ["Campaign"],
-}),
+    getMyCampaigns: builder.query({
+      query: () => "/campaign",
+      providesTags: ["Campaign"],
+    }),
 
     deleteCampaign: builder.mutation({
       query: (id) => ({
-        url: `/${id}`,
+        url: `/campaign/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Campaign"],

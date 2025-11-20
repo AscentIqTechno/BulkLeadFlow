@@ -1,4 +1,3 @@
-// export default CampaignForm;
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useCreateCampaignMutation } from "@/redux/api/campaignApi";
@@ -12,16 +11,23 @@ interface SmtpData {
   secure: boolean;
 }
 
+interface EmailItem {
+  _id: string;
+  name: string;
+  email: string;
+}
+
 interface CampaignFormProps {
   data: SmtpData[];
+  emailDirectory: EmailItem[];
 }
 
 interface FormDataState {
   name: string;
   subject: string;
   smtpId: string;
-  recipients: string;
   message: string;
+  recipients: string[];
 }
 
 interface FormErrors {
@@ -32,21 +38,26 @@ interface FormErrors {
   message?: string;
 }
 
-const CampaignForm: React.FC<CampaignFormProps> = ({ data }) => {
+const CampaignForm: React.FC<CampaignFormProps> = ({ data, emailDirectory }) => {
   const [formData, setFormData] = useState<FormDataState>({
     name: "",
     subject: "",
     smtpId: "",
-    recipients: "",
     message: "",
+    recipients: [],
   });
 
   const [attachments, setAttachments] = useState<File[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
-  const [progress, setProgress] = useState<{ total: number; sent: number; failed: number } | null>(null);
+  const [progress, setProgress] = useState<{
+    total: number;
+    sent: number;
+    failed: number;
+  } | null>(null);
 
   const [createCampaign] = useCreateCampaignMutation();
 
+  // Input Change Handler
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
@@ -55,36 +66,37 @@ const CampaignForm: React.FC<CampaignFormProps> = ({ data }) => {
     setErrors({ ...errors, [name]: "" });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setAttachments(Array.from(e.target.files));
+  // Toggle Email Selection
+  const toggleRecipient = (email: string) => {
+    let updated = [...formData.recipients];
+
+    if (updated.includes(email)) {
+      updated = updated.filter((r) => r !== email);
+    } else {
+      updated.push(email);
     }
+
+    setFormData({ ...formData, recipients: updated });
+    setErrors({ ...errors, recipients: "" });
   };
 
+  // Validation
   const validateFields = (): boolean => {
     const newErrors: FormErrors = {};
     if (!formData.name.trim()) newErrors.name = "Campaign Name is required";
     if (!formData.subject.trim()) newErrors.subject = "Subject is required";
     if (!formData.smtpId) newErrors.smtpId = "Sender Email is required";
-    if (!formData.recipients.trim()) newErrors.recipients = "At least one recipient is required";
+    if (formData.recipients.length === 0) newErrors.recipients = "Select at least one recipient";
     if (!formData.message.trim()) newErrors.message = "Message cannot be empty";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  // Submit Handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateFields()) return;
-
-    const recipientList = formData.recipients
-      .split(",")
-      .map((r) => r.trim())
-      .filter((r) => r);
-
-    if (recipientList.length === 0) {
-      setErrors({ recipients: "At least one recipient is required" });
-      return;
-    }
 
     const payload = new FormData();
     payload.append("name", formData.name);
@@ -92,34 +104,33 @@ const CampaignForm: React.FC<CampaignFormProps> = ({ data }) => {
     payload.append("smtpId", formData.smtpId);
     payload.append("message", formData.message);
 
-    // Append each recipient
-    recipientList.forEach((r) => payload.append("recipients[]", r));
-
-    // Attachments (optional)
+    formData.recipients.forEach((email) => payload.append("recipients[]", email));
     attachments.forEach((file) => payload.append("attachments", file));
 
-    // Show progress modal
-    setProgress({ total: recipientList.length, sent: 0, failed: 0 });
+    setProgress({ total: formData.recipients.length, sent: 0, failed: 0 });
 
     try {
       const response: any = await createCampaign(payload).unwrap();
 
-      // Update progress from backend
       setProgress({
         total: response.totalRecipients,
         sent: response.sentCount,
         failed: response.totalRecipients - response.sentCount,
       });
 
-      // Reset form after a short delay
       setTimeout(() => {
-        setFormData({ name: "", subject: "", smtpId: "", recipients: "", message: "" });
+        setFormData({
+          name: "",
+          subject: "",
+          smtpId: "",
+          message: "",
+          recipients: [],
+        });
         setAttachments([]);
         setErrors({});
         setProgress(null);
-      }, 3000);
-    } catch (err: any) {
-      console.error(err?.data?.message || err);
+      }, 2000);
+    } catch {
       setProgress(null);
     }
   };
@@ -144,8 +155,9 @@ const CampaignForm: React.FC<CampaignFormProps> = ({ data }) => {
           {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
         </div>
 
-        {/* Subject & Sender */}
+        {/* Subject + Sender */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Subject */}
           <div>
             <label className="block text-sm text-gray-400 mb-1">Subject</label>
             <input
@@ -160,6 +172,7 @@ const CampaignForm: React.FC<CampaignFormProps> = ({ data }) => {
             {errors.subject && <p className="text-red-500 text-xs mt-1">{errors.subject}</p>}
           </div>
 
+          {/* Sender */}
           <div>
             <label className="block text-sm text-gray-400 mb-1">Sender Email</label>
             <select
@@ -181,20 +194,31 @@ const CampaignForm: React.FC<CampaignFormProps> = ({ data }) => {
           </div>
         </div>
 
-        {/* Recipients */}
+        {/* EMAIL MULTI SELECT CHECKBOX UI */}
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Recipients</label>
-          <input
-            type="text"
-            name="recipients"
-            value={formData.recipients}
-            onChange={handleChange}
-            placeholder="comma,separated,emails@domain.com"
-            className={`w-full p-2 rounded bg-gray-800 border ${
-              errors.recipients ? "border-red-500" : "border-gray-700"
-            } text-white`}
-          />
-          {errors.recipients && <p className="text-red-500 text-xs mt-1">{errors.recipients}</p>}
+          <label className="block text-sm text-gray-300 mb-1">Select Emails</label>
+
+          <div className="max-h-48 overflow-y-auto border border-gray-700 rounded-lg p-2 bg-[#0F1A1E]">
+            {emailDirectory?.length === 0 ? (
+              <p className="text-gray-400">No emails found.</p>
+            ) : (
+              emailDirectory?.map((e) => (
+                <label key={e._id} className="flex items-center gap-2 text-white mb-1">
+                  <input
+                    type="checkbox"
+                    checked={formData.recipients.includes(e.email)}
+                    onChange={() => toggleRecipient(e.email)}
+                    className="accent-blue-600"
+                  />
+                 {e?.email}
+                </label>
+              ))
+            )}
+          </div>
+
+          {errors.recipients && (
+            <p className="text-red-500 text-xs mt-1">{errors.recipients}</p>
+          )}
         </div>
 
         {/* Message */}
@@ -218,7 +242,9 @@ const CampaignForm: React.FC<CampaignFormProps> = ({ data }) => {
           <input
             type="file"
             multiple
-            onChange={handleFileChange}
+            onChange={(e) => {
+              if (e.target.files) setAttachments(Array.from(e.target.files));
+            }}
             className="w-full p-2 rounded bg-gray-800 border border-gray-700 text-white"
           />
           {attachments.length > 0 && (
@@ -226,6 +252,7 @@ const CampaignForm: React.FC<CampaignFormProps> = ({ data }) => {
           )}
         </div>
 
+        {/* Submit */}
         <Button type="submit" className="bg-blue-600 hover:bg-blue-700 w-full mt-3">
           {progress ? "Sending..." : "Send Campaign"}
         </Button>
@@ -242,7 +269,9 @@ const CampaignForm: React.FC<CampaignFormProps> = ({ data }) => {
             <div className="w-full h-3 bg-gray-700 rounded-full overflow-hidden">
               <div
                 className="h-full bg-blue-500 transition-all duration-300"
-                style={{ width: `${(progress.sent / progress.total) * 100}%` }}
+                style={{
+                  width: `${(progress.sent / progress.total) * 100}%`,
+                }}
               />
             </div>
           </div>

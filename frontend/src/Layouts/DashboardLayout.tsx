@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Sidebar from "@/components/Sidbar";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Menu, LogOut } from "lucide-react";
-import { useLogoutUserMutation } from "@/redux/api/authApi";
+import { authApi } from "@/redux/api/authApi";
 import { useSelector } from "react-redux";
 
 const DashboardLayout = () => {
@@ -11,12 +11,13 @@ const DashboardLayout = () => {
   const navigate = useNavigate();
   const user = useSelector((state: any) => state.auth?.user || []);
 
-  const [logoutUser] = useLogoutUserMutation();
+ const [logoutUser] = authApi.useLogoutUserMutation();
+
 
   // Logout handler
   const handleLogout = async () => {
     try {
-      await logoutUser().unwrap();
+      await logoutUser(null);
 
       localStorage.removeItem("reachiq_user");
       localStorage.removeItem("token");

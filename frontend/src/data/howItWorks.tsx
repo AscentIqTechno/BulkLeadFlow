@@ -1,25 +1,35 @@
-import { Settings, Mail, BarChart3 } from "lucide-react";
+// howItWorks.js
+import { Settings, Smartphone, Send, Mail, MessageCircle, BarChart } from "lucide-react";
 
 export const steps = [
   {
     number: "01",
-    icon: <Settings size={24} />,
+    icon: <Settings className="h-6 w-6" />,
     title: "Configure SMTP Settings",
-    description:
-      "Easily connect your email provider (Gmail, Outlook, or custom SMTP). Securely store credentials to send campaigns from your own domain.",
+    description: "Set up your personal email account with SMTP configuration. Use Gmail, Outlook, or any email provider that supports SMTP."
   },
   {
     number: "02",
-    icon: <Mail size={24} />,
-    title: "Create & Send Campaigns",
-    description:
-      "Design personalized email campaigns, import leads, and send messages individually through your SMTP for maximum deliverability.",
+    icon: <Smartphone className="h-6 w-6" />,
+    title: "Connect Android Gateway",
+    description: "Install our gateway app on your Android phone and connect it to your account. Your phone becomes your SMS sending device."
   },
   {
     number: "03",
-    icon: <BarChart3 size={24} />,
-    title: "Track Leads & Performance",
-    description:
-      "Monitor delivery rates, opens, and engagement analytics in real-time. Use insights to refine campaigns and generate more qualified leads.",
+    icon: <Mail className="h-6 w-6" />,
+    title: "Create Email Campaign",
+    description: "Upload your contact list, design your email template, and schedule your bulk email campaign with personalization."
   },
+  {
+    number: "04",
+    icon: <MessageCircle className="h-6 w-6" />,
+    title: "Setup SMS Campaign",
+    description: "Create SMS templates, select your connected Android device, and prepare your bulk SMS outreach with contact segmentation."
+  },
+  {
+    number: "05",
+    icon: <Send className="h-6 w-6" />,
+    title: "Launch Campaigns",
+    description: "Send your email and SMS campaigns simultaneously. Control sending speed and schedule for optimal delivery rates."
+  }
 ];

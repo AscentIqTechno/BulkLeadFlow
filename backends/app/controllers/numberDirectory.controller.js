@@ -15,7 +15,7 @@ const isAdminUser = (user) => {
 exports.getMyNumbers = async (req, res) => {
   try {
     const numbers = await NumberDirectory.find({ userId: req.userId })
-      .select("number name createdAt");
+      .select("number name isConfidential createdAt");
 
     res.status(200).json(numbers);
   } catch (err) {
@@ -35,7 +35,7 @@ exports.getAllNumbers = async (req, res) => {
     }
 
     const numbers = await NumberDirectory.find()
-      .select("number name userId createdAt");
+      .select("number name isConfidential userId createdAt");
 
     res.status(200).json(numbers);
   } catch (err) {
@@ -48,7 +48,7 @@ exports.getAllNumbers = async (req, res) => {
 // ==========================================
 exports.addNumber = async (req, res) => {
   try {
-    const { number, name } = req.body;
+    const { number, name, isConfidential } = req.body;
 
     if (!number) {
       return res.status(400).json({ message: "Number is required" });
@@ -65,6 +65,7 @@ exports.addNumber = async (req, res) => {
       userId: req.userId,
       number,
       name: name || "",
+      isConfidential: isConfidential || false,
     });
 
     res.status(201).json(entry);
@@ -73,14 +74,13 @@ exports.addNumber = async (req, res) => {
   }
 };
 
-
 // ==========================================
 // UPDATE NUMBER
 // ==========================================
 exports.updateNumber = async (req, res) => {
   try {
     const { id } = req.params;
-    const { number, name } = req.body;
+    const { number, name, isConfidential } = req.body;
 
     const entry = await NumberDirectory.findById(id);
     if (!entry) return res.status(404).json({ message: "Number not found" });
@@ -93,6 +93,7 @@ exports.updateNumber = async (req, res) => {
 
     entry.number = number ?? entry.number;
     entry.name = name ?? entry.name;
+    entry.isConfidential = isConfidential ?? entry.isConfidential;
 
     await entry.save();
 
@@ -131,7 +132,7 @@ exports.deleteNumber = async (req, res) => {
 
 // ==========================================
 // BULK IMPORT CSV
-// Columns: number,name
+// Columns: number,name,isConfidential
 // ==========================================
 exports.bulkImport = async (req, res) => {
   try {
@@ -148,6 +149,7 @@ exports.bulkImport = async (req, res) => {
       userId: req.userId,
       number: item.number || item.Number || item.Contact, // map correct CSV column
       name: item.name || item.Name || "",
+      isConfidential: item.isConfidential === 'true' || item.isConfidential === true || false,
     }));
 
     // Filter out entries with missing number
@@ -178,4 +180,3 @@ exports.bulkImport = async (req, res) => {
     res.status(500).json({ message: "Failed to import numbers", error: err.message });
   }
 };
-

@@ -10,6 +10,13 @@ import {
   ChevronDown,
   ChevronRight,
   X,
+  MessageSquare,
+  Users,
+  BarChart3,
+  Smartphone,
+  CreditCard,
+  Database,
+  Cpu
 } from "lucide-react";
 import clsx from "clsx";
 import { useSelector } from "react-redux";
@@ -39,98 +46,139 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
 
       <aside
         className={clsx(
-          "fixed md:static z-20 h-full w-64 transform transition-transform duration-300 ease-in-out bg-gray-900 text-white shadow-xl",
+          "fixed md:static z-20 h-full w-64 transform transition-transform duration-300 ease-in-out bg-gray-900 text-white shadow-xl border-r border-gray-700",
           { "-translate-x-full md:translate-x-0": !isOpen, "translate-x-0": isOpen }
         )}
       >
-        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-700">
-          <h2 className="text-xl font-semibold">ReachIQ</h2>
-          <button className="md:hidden p-2 hover:bg-gray-800 rounded-md" onClick={() => setIsOpen(false)}>
-            <X size={20} />
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-700 bg-gray-800/50">
+          <h2 className="text-xl font-bold">
+            Lead<span className="text-yellow-500">Reach</span>
+            <span className="text-white">Xpro</span>
+          </h2>
+          <button 
+            className="md:hidden p-2 hover:bg-gray-700 rounded-md transition-colors" 
+            onClick={() => setIsOpen(false)}
+          >
+            <X size={20} className="text-gray-300" />
           </button>
         </div>
 
-        <nav className="mt-4 px-2">
+        <nav className="mt-4 px-2 space-y-1">
           {/* Dashboard */}
           <Link
-            to="/ReachIQ/dashboard/overview"
+            to="/dashboard/overview"
             className={clsx(
-              "flex items-center gap-3 px-4 py-3 rounded-md",
+              "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
               location.pathname.includes("/overview")
-                ? "bg-gray-800 text-white"
-                : "text-gray-300 hover:bg-gray-800"
+                ? "bg-yellow-500 text-gray-900 font-semibold shadow-md"
+                : "text-gray-300 hover:bg-gray-800 hover:text-white"
             )}
             onClick={() => setIsOpen(false)}
           >
             <Home size={18} />
-            <span>Dashboard</span>
+            <span>Dashboard Overview</span>
+          </Link>
+
+          {/* Delivery Analytics - Replaced Campaign Analytics */}
+          <Link
+            to="/dashboard/analytics"
+            className={clsx(
+              "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+              location.pathname.includes("/analytics")
+                ? "bg-yellow-500 text-gray-900 font-semibold shadow-md"
+                : "text-gray-300 hover:bg-gray-800 hover:text-white"
+            )}
+            onClick={() => setIsOpen(false)}
+          >
+            <BarChart3 size={18} />
+            <span>Delivery Analytics</span>
+          </Link>
+
+          {/* Billing & Payments */}
+          <Link
+            to="/dashboard/billing"
+            className={clsx(
+              "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+              location.pathname.includes("/billing")
+                ? "bg-yellow-500 text-gray-900 font-semibold shadow-md"
+                : "text-gray-300 hover:bg-gray-800 hover:text-white"
+            )}
+            onClick={() => setIsOpen(false)}
+          >
+            <CreditCard size={18} />
+            <span>Billing & Payments</span>
           </Link>
 
           {/* ADMIN ONLY */}
           {isAdmin && (
-            <>
-              <Link
-                to="/ReachIQ/dashboard/users"
-                className={clsx(
-                  "flex items-center gap-3 px-4 py-3 rounded-md",
-                  location.pathname.includes("/users")
-                    ? "bg-gray-800 text-white"
-                    : "text-gray-300 hover:bg-gray-800"
-                )}
-              >
-                <UserCog size={18} />
-                <span>User Management</span>
-              </Link>
-            </>
+            <Link
+              to="/dashboard/users"
+              className={clsx(
+                "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+                location.pathname.includes("/users")
+                  ? "bg-yellow-500 text-gray-900 font-semibold shadow-md"
+                  : "text-gray-300 hover:bg-gray-800 hover:text-white"
+              )}
+            >
+              <UserCog size={18} />
+              <span>User Management</span>
+            </Link>
           )}
 
           {/* Email Collapsible Section */}
           <div className="mt-3">
             <button
-              className="flex items-center justify-between w-full px-4 py-3 text-left text-gray-300 hover:bg-gray-800 rounded-md"
+              className="flex items-center justify-between w-full px-4 py-3 text-left rounded-lg transition-all duration-200 hover:bg-gray-800 group"
               onClick={() => setOpenEmail(!openEmail)}
             >
-              <span className="flex items-center gap-3">
+              <span className="flex items-center gap-3 text-gray-300 group-hover:text-white font-medium">
                 <Mail size={18} /> Email Operations
               </span>
-              {openEmail ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              {openEmail ? 
+                <ChevronDown size={16} className="text-gray-400 group-hover:text-white" /> : 
+                <ChevronRight size={16} className="text-gray-400 group-hover:text-white" />
+              }
             </button>
 
             {openEmail && (
-              <div className="ml-8 mt-2 space-y-2">
+              <div className="ml-6 mt-2 space-y-1 border-l-2 border-gray-700 pl-3">
                 <Link
-                  to="/ReachIQ/dashboard/email_directory"
+                  to="/dashboard/email_directory"
                   className={clsx(
-                    "block text-sm px-3 py-2 rounded-md",
+                    "flex items-center gap-2 text-sm px-3 py-2 rounded-md transition-all duration-200",
                     location.pathname.includes("/email_directory")
-                      ? "bg-gray-800 text-white"
-                      : "text-gray-400 hover:bg-gray-800"
+                      ? "bg-yellow-500 text-gray-900 font-medium shadow-sm"
+                      : "text-gray-400 hover:bg-gray-800 hover:text-white"
                   )}
                 >
+                  <BookUser size={14} />
                   Email Directory
                 </Link>
 
                 <Link
-                  to="/ReachIQ/dashboard/smtp"
+                  to="/dashboard/smtp"
                   className={clsx(
-                    "block text-sm px-3 py-2 rounded-md",
+                    "flex items-center gap-2 text-sm px-3 py-2 rounded-md transition-all duration-200",
                     location.pathname.includes("/smtp")
-                      ? "bg-gray-800 text-white"
-                      : "text-gray-400 hover:bg-gray-800"
+                      ? "bg-yellow-500 text-gray-900 font-medium shadow-sm"
+                      : "text-gray-400 hover:bg-gray-800 hover:text-white"
                   )}
                 >
+                  <Settings size={14} />
                   SMTP Configuration
                 </Link>
 
                 <Link
-                  to="/ReachIQ/dashboard/campaigns"
+                  to="/dashboard/campaigns"
                   className={clsx(
-                    "block text-sm px-3 py-2 rounded-md",
+                    "flex items-center gap-2 text-sm px-3 py-2 rounded-md transition-all duration-200",
                     location.pathname.includes("/campaigns")
-                      ? "bg-gray-800 text-white"
-                      : "text-gray-400 hover:bg-gray-800"
+                      ? "bg-yellow-500 text-gray-900 font-medium shadow-sm"
+                      : "text-gray-400 hover:bg-gray-800 hover:text-white"
                   )}
                 >
+                  <Mail size={14} />
                   Email Campaigns
                 </Link>
               </div>
@@ -140,57 +188,99 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
           {/* SMS Collapsible Section */}
           <div className="mt-3">
             <button
-              className="flex items-center justify-between w-full px-4 py-3 text-left text-gray-300 hover:bg-gray-800 rounded-md"
+              className="flex items-center justify-between w-full px-4 py-3 text-left rounded-lg transition-all duration-200 hover:bg-gray-800 group"
               onClick={() => setOpenSms(!openSms)}
             >
-              <span className="flex items-center gap-3">
-                <Phone size={18} /> SMS Operations
+              <span className="flex items-center gap-3 text-gray-300 group-hover:text-white font-medium">
+                <Smartphone size={18} /> SMS Operations
               </span>
-              {openSms ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              {openSms ? 
+                <ChevronDown size={16} className="text-gray-400 group-hover:text-white" /> : 
+                <ChevronRight size={16} className="text-gray-400 group-hover:text-white" />
+              }
             </button>
 
             {openSms && (
-              <div className="ml-8 mt-2 space-y-2">
+              <div className="ml-6 mt-2 space-y-1 border-l-2 border-gray-700 pl-3">
                 <Link
-                  to="/ReachIQ/dashboard/sms_directory"
+                  to="/dashboard/sms_directory"
                   className={clsx(
-                    "block text-sm px-3 py-2 rounded-md",
+                    "flex items-center gap-2 text-sm px-3 py-2 rounded-md transition-all duration-200",
                     location.pathname.includes("/sms_directory")
-                      ? "bg-gray-800 text-white"
-                      : "text-gray-400 hover:bg-gray-800"
+                      ? "bg-yellow-500 text-gray-900 font-medium shadow-sm"
+                      : "text-gray-400 hover:bg-gray-800 hover:text-white"
                   )}
                 >
+                  <Users size={14} />
                   SMS Number Directory
                 </Link>
 
                 <Link
-                  to="/ReachIQ/dashboard/sms_config"
+                  to="/dashboard/sms_config"
                   className={clsx(
-                    "block text-sm px-3 py-2 rounded-md",
+                    "flex items-center gap-2 text-sm px-3 py-2 rounded-md transition-all duration-200",
                     location.pathname.includes("/sms_config")
-                      ? "bg-gray-800 text-white"
-                      : "text-gray-400 hover:bg-gray-800"
+                      ? "bg-yellow-500 text-gray-900 font-medium shadow-sm"
+                      : "text-gray-400 hover:bg-gray-800 hover:text-white"
                   )}
                 >
-                  SMS Gateway Configuration
+                  <Settings size={14} />
+                  Android Gateway Setup
                 </Link>
 
                 <Link
-                  to="/ReachIQ/dashboard/sms_campaigns"
+                  to="/dashboard/sms_campaigns"
                   className={clsx(
-                    "block text-sm px-3 py-2 rounded-md",
+                    "flex items-center gap-2 text-sm px-3 py-2 rounded-md transition-all duration-200",
                     location.pathname.includes("/sms_campaigns")
-                      ? "bg-gray-800 text-white"
-                      : "text-gray-400 hover:bg-gray-800"
+                      ? "bg-yellow-500 text-gray-900 font-medium shadow-sm"
+                      : "text-gray-400 hover:bg-gray-800 hover:text-white"
                   )}
                 >
+                  <MessageSquare size={14} />
                   SMS Campaigns
                 </Link>
               </div>
             )}
           </div>
 
+          {/* System Status */}
+          <Link
+            to="/dashboard/system"
+            className={clsx(
+              "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 mt-4",
+              location.pathname.includes("/system")
+                ? "bg-yellow-500 text-gray-900 font-semibold shadow-md"
+                : "text-gray-300 hover:bg-gray-800 hover:text-white"
+            )}
+            onClick={() => setIsOpen(false)}
+          >
+            <Cpu size={18} />
+            <span>System Status</span>
+          </Link>
+
+          {/* Settings */}
+          <Link
+            to="/dashboard/settings"
+            className={clsx(
+              "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+              location.pathname.includes("/settings")
+                ? "bg-yellow-500 text-gray-900 font-semibold shadow-md"
+                : "text-gray-300 hover:bg-gray-800 hover:text-white"
+            )}
+            onClick={() => setIsOpen(false)}
+          >
+            <Settings size={18} />
+            <span>Settings</span>
+          </Link>
         </nav>
+
+        {/* Footer Info */}
+        <div className="absolute bottom-4 left-4 right-4 p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+          <p className="text-xs text-gray-400 text-center">
+            Personal SMTP & Android Gateway
+          </p>
+        </div>
       </aside>
     </>
   );

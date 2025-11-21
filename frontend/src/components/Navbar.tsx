@@ -22,7 +22,7 @@ const Navbar = () => {
       <nav
         className={`fixed w-full z-50 transition-all duration-300 ${
           isScrolled
-            ? "bg-[#0B0F19]/90 backdrop-blur-md py-3 shadow-lg"
+            ? "bg-gray-900/90 backdrop-blur-md py-3 shadow-lg"
             : "py-6"
         }`}
       >
@@ -30,11 +30,11 @@ const Navbar = () => {
           {/* Logo */}
           <div className="flex items-center">
             <h1 className="text-2xl font-extrabold text-white tracking-wide">
-              Reach<span className="text-[#6C63FF]">IQ</span>
+              Lead<span className="text-yellow-500">Reach</span>
+              <span className="text-white">Xpro</span>
             </h1>
           </div>
 
-          {/* Desktop Menu */}
           <ul className="hidden lg:flex items-center space-x-8">
             {["Features", "How it works", "Testimonials", "Pricing", "FAQ"].map(
               (item) => (
@@ -60,10 +60,10 @@ const Navbar = () => {
               Login
             </Button>
             <Button
-              className="bg-[#6C63FF] hover:bg-[#5A52E0] text-white w-full"
+              className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold w-full"
               onClick={() => setIsSignupOpen(true)}
             >
-              Sign Up
+              Get Started
             </Button>
           </div>
 
@@ -78,22 +78,20 @@ const Navbar = () => {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden bg-[#0B0F19]/95 backdrop-blur-lg absolute top-full left-0 w-full py-4 shadow-lg">
+          <div className="lg:hidden bg-gray-900/95 backdrop-blur-lg absolute top-full left-0 w-full py-4 shadow-lg">
             <div className="container mx-auto px-4">
               <ul className="flex flex-col space-y-4">
-                {["Features", "How it works", "Testimonials", "Pricing", "FAQ"].map(
-                  (item) => (
-                    <li key={item}>
-                      <a
-                        href={`#${item.toLowerCase().replace(/\s/g, "-")}`}
-                        className="text-gray-300 hover:text-white transition-colors block py-2"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        {item}
-                      </a>
-                    </li>
-                  )
-                )}
+                {["Features", "How it works", "Testimonials", "Pricing", "FAQ"].map((item) => (
+                  <li key={item}>
+                    <a
+                      href={`#${item.toLowerCase().replace(/\s/g, "-")}`}
+                      className="text-gray-300 hover:text-white transition-colors block py-2"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      {item}
+                    </a>
+                  </li>
+                ))}
                 <li className="pt-4 flex flex-col space-y-3">
                   <Button
                     variant="ghost"
@@ -103,10 +101,10 @@ const Navbar = () => {
                     Login
                   </Button>
                   <Button
-                    className="bg-[#6C63FF] hover:bg-[#5A52E0] text-white w-full"
+                    className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold w-full"
                     onClick={() => setIsSignupOpen(true)}
                   >
-                    Sign Up
+                    Get Started
                   </Button>
                 </li>
               </ul>

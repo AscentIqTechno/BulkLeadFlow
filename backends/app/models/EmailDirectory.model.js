@@ -18,6 +18,10 @@ const EmailDirectorySchema = new Schema(
       type: String,
       default: "",
     },
+    isConfidential: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

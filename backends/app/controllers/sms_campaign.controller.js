@@ -4,6 +4,77 @@ const SmsGatewayConfig = db.SmsGatewayConfig;
 const axios = require("axios");
 
 // ------------------ SEND BULK SMS ------------------
+// exports.sendBulkSms = async (req, res) => {
+//   try {
+//     const { gatewayId, numbers, message, title } = req.body;
+//     const userId = req.userId;
+
+//     if (!userId) return res.status(400).json({ success: false, error: "userId is required" });
+//     if (!Array.isArray(numbers) || numbers.length === 0)
+//       return res.status(400).json({ success: false, error: "numbers array is required" });
+
+//     const gateway = await SmsGatewayConfig.findById(gatewayId);
+//     if (!gateway) return res.status(404).json({ success: false, error: "Gateway not found" });
+
+//     // Create campaign in DB first
+//     const campaign = await SmsCampaign.create({
+//       userId,
+//       gatewayId,
+//       smsTitle: title,
+//       message,
+//       selectedNumbers: numbers,
+//       totalContacts: numbers.length,
+//       sentCount: 0,
+//       failedCount: 0,
+//       status: "processing",
+//     });
+
+//     let sentCount = 0;
+//     let failedCount = 0;
+//     const results = [];
+//     const SMS_ENDPOINT = "/send-sms";
+
+//     for (const num of numbers) {
+//       try {
+//         const resp = await axios.post(`http://${gateway.ip}:${gateway.port}${SMS_ENDPOINT}`, {
+//           phone: num,
+//           message,
+//         });
+
+//         const status =
+//           resp?.data?.status || (resp.status >= 200 && resp.status < 300 ? "sent" : "failed");
+
+//         if (status === "sent" || status === "delivered") sentCount++;
+//         else failedCount++;
+
+//         results.push({ number: num, status });
+//       } catch (err) {
+//         failedCount++;
+//         results.push({ number: num, status: "failed" });
+//       }
+//     }
+
+//     // Update campaign counts
+//     campaign.sentCount = sentCount;
+//     campaign.failedCount = failedCount;
+//     campaign.status =
+//       failedCount === 0 ? "sent" : sentCount === 0 ? "failed" : "partial";
+
+//     await campaign.save();
+
+//     res.json({
+//       success: true,
+//       campaignId: campaign._id,
+//       total: numbers.length,
+//       sent: sentCount,
+//       failed: failedCount,
+//       results,
+//       campaign,
+//     });
+//   } catch (e) {
+//     res.status(500).json({ success: false, error: e.message });
+//   }
+// };
 exports.sendBulkSms = async (req, res) => {
   try {
     const { gatewayId, numbers, message, title } = req.body;
@@ -16,7 +87,7 @@ exports.sendBulkSms = async (req, res) => {
     const gateway = await SmsGatewayConfig.findById(gatewayId);
     if (!gateway) return res.status(404).json({ success: false, error: "Gateway not found" });
 
-    // Create campaign in DB first
+    // Create campaign with defaults
     const campaign = await SmsCampaign.create({
       userId,
       gatewayId,
@@ -36,45 +107,46 @@ exports.sendBulkSms = async (req, res) => {
 
     for (const num of numbers) {
       try {
-        const resp = await axios.post(`http://${gateway.ip}:${gateway.port}${SMS_ENDPOINT}`, {
-          phone: num,
-          message,
-        });
-
-        const status =
-          resp?.data?.status || (resp.status >= 200 && resp.status < 300 ? "sent" : "failed");
+        const resp = await axios.post(`http://${gateway.ip}:${gateway.port}${SMS_ENDPOINT}`, { phone: num, message });
+        const status = resp?.data?.status || (resp.status >= 200 && resp.status < 300 ? "sent" : "failed");
 
         if (status === "sent" || status === "delivered") sentCount++;
         else failedCount++;
 
         results.push({ number: num, status });
-      } catch (err) {
+      } catch {
         failedCount++;
         results.push({ number: num, status: "failed" });
       }
     }
 
-    // Update campaign counts
-    campaign.sentCount = sentCount;
-    campaign.failedCount = failedCount;
-    campaign.status =
-      failedCount === 0 ? "sent" : sentCount === 0 ? "failed" : "partial";
-
-    await campaign.save();
+    // Update campaign safely using findByIdAndUpdate
+    const finalStatus = failedCount === 0 ? "sent" : sentCount === 0 ? "failed" : "partial";
+    const updatedCampaign = await SmsCampaign.findByIdAndUpdate(
+      campaign._id,
+      {
+        sentCount,
+        failedCount,
+        status: finalStatus,
+        results, // optional: store per-number status
+      },
+      { new: true, runValidators: true }
+    ).lean();
 
     res.json({
       success: true,
-      campaignId: campaign._id,
+      campaignId: updatedCampaign._id,
       total: numbers.length,
       sent: sentCount,
       failed: failedCount,
       results,
-      campaign,
+      campaign: updatedCampaign,
     });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
   }
 };
+
 
 // ------------------ GET ALL CAMPAIGNS ------------------
 exports.getSMScompain = async (req, res) => {

@@ -8,53 +8,60 @@ import {
 
 const faqItems = [
   {
-    question: "What is ReachIQ?",
-    answer:
-      "ReachIQ is an AI-powered marketing platform that helps you manage SMTP, create smart email campaigns, and track leads — all from one unified dashboard.",
+    question: "What is LeadReachXpro?",
+    answer: "LeadReachXpro is a bulk email and SMS platform that lets you use your personal email accounts (via SMTP) and Android phones (as SMS gateways) to send campaigns. You maintain complete control over your sending accounts while benefiting from our campaign management tools."
   },
   {
-    question: "How does ReachIQ generate leads?",
-    answer:
-      "ReachIQ uses your campaign data and SMTP insights to track user engagement such as clicks and responses, helping you identify and qualify genuine leads automatically.",
+    question: "How does the Android SMS gateway work?",
+    answer: "You install our gateway app on your Android phone, connect it to your LeadReachXpro account, and then you can send bulk SMS messages directly through your phone. The app handles message queuing and delivery, using your phone's native messaging capabilities."
   },
   {
-    question: "Do I need technical knowledge to use ReachIQ?",
-    answer:
-      "Not at all! ReachIQ is built for marketers, founders, and agencies. Its intuitive dashboard and automation features make campaign setup and lead tracking effortless.",
+    question: "Can I use my personal Gmail, Outlook, or other email accounts?",
+    answer: "Yes! You can configure any email provider that supports SMTP. This includes Gmail, Outlook, Yahoo, iCloud, and custom domain emails. We provide step-by-step guides for setting up each provider."
   },
   {
-    question: "Can I integrate my own SMTP or email service?",
-    answer:
-      "Yes, you can easily connect your SMTP credentials to ReachIQ. Once configured, all emails are sent securely through your account — ReachIQ doesn’t store or resend your messages.",
+    question: "Is there a limit to how many emails or SMS I can send?",
+    answer: "With our Starter plan, you get 500 emails and 100 SMS per month. Our Professional plan offers 10,000 emails and 2,000 SMS, while Enterprise has unlimited sending. These limits help maintain good sender reputation with providers."
+  },
+  {
+    question: "Will using my personal accounts affect my email reputation?",
+    answer: "We provide tools to maintain good sender reputation, including sending speed controls, bounce handling, and engagement tracking. However, you should always follow email best practices and respect anti-spam laws."
+  },
+  {
+    question: "Do I need multiple Android phones for large SMS campaigns?",
+    answer: "For larger volumes, we recommend using multiple devices to avoid carrier limits and ensure better delivery rates. Our Enterprise plan supports unlimited gateway connections for this purpose."
+  },
+  {
+    question: "How secure is my account information?",
+    answer: "We encrypt all SMTP credentials and gateway connections. Your passwords are never stored in plain text, and we use secure protocols for all data transmission. You maintain ownership of all your accounts and data."
+  },
+  {
+    question: "Can I schedule campaigns for optimal delivery times?",
+    answer: "Yes! Our platform includes smart scheduling that lets you send emails and SMS at the best times for engagement. You can also set up time-zone based delivery for international audiences."
+  },
+  {
+    question: "What kind of analytics and reporting do you provide?",
+    answer: "You get real-time analytics including delivery rates, open rates, click-through rates for emails, and delivery status for SMS. Our dashboard shows campaign performance and lead engagement metrics."
   },
   {
     question: "Is there a free trial available?",
-    answer:
-      "Yes! You can try ReachIQ free for 15 days with full access to all features. After the trial, you can continue using it with the Basic ($5/month) or Premium ($25/month) plan.",
-  },
-  {
-    question: "How secure is my data on ReachIQ?",
-    answer:
-      "We use advanced encryption and secure infrastructure to protect your campaign data, SMTP credentials, and user information. Security is one of our top priorities.",
-  },
-  {
-    question: "Can I upgrade or cancel my plan anytime?",
-    answer:
-      "Yes, you can upgrade or cancel your subscription at any time from your account dashboard. Your data and campaign settings remain safe and accessible.",
-  },
+    answer: "Yes! Our Starter plan is completely free and includes 500 emails and 100 SMS per month. You can upgrade to Professional ($29/month) or Enterprise ($99/month) anytime for higher limits and advanced features."
+  }
 ];
 
 const FAQ = () => {
   return (
-    <section id="faq" className="py-24 bg-gradient-to-b from-[#12141C] to-crypto-blue">
+    <section id="faq" className="py-24 bg-gradient-to-b from-black to-gray-900">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gradient">
-            Frequently Asked Questions
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-yellow-300">
+              Frequently Asked Questions
+            </span>
           </h2>
           <p className="text-gray-400 max-w-2xl mx-auto">
-            Got questions about ReachIQ? We’ve got answers. Here are some common queries to help you get started.
+            Everything you need to know about LeadReachXpro and how to get started with bulk email and SMS using your personal accounts.
           </p>
         </div>
 
@@ -68,7 +75,7 @@ const FAQ = () => {
                 className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden animate-on-scroll"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <AccordionTrigger className="px-6 py-4 text-white hover:text-crypto-purple hover:no-underline">
+                <AccordionTrigger className="px-6 py-4 text-white hover:text-yellow-500 hover:no-underline text-left font-medium">
                   {item.question}
                 </AccordionTrigger>
                 <AccordionContent className="px-6 pb-4 text-gray-400">
@@ -77,6 +84,16 @@ const FAQ = () => {
               </AccordionItem>
             ))}
           </Accordion>
+        </div>
+
+        {/* Additional CTA */}
+        <div className="text-center mt-12">
+          <p className="text-gray-400 mb-4">
+            Still have questions? We're here to help.
+          </p>
+          <button className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold px-6 py-3 rounded-lg transition-colors">
+            Contact Support
+          </button>
         </div>
       </div>
     </section>

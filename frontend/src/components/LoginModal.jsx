@@ -10,6 +10,7 @@ const LoginModal = ({ open, onClose }) => {
   if (!open) return null;
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
@@ -40,44 +41,39 @@ const LoginModal = ({ open, onClose }) => {
   // ---------------------------
   // SUBMIT HANDLER
   // ---------------------------
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
+    try {
+      const res = await loginUser({
+        email: form.email,
+        password: form.password,
+      }).unwrap();
 
-const dispatch = useDispatch();
+      // Save token and user in Redux
+      dispatch(
+        setCredentials({
+          user: res,
+          token: res.accessToken,
+        })
+      );
 
+      // (Optional) Save to localStorage
+      localStorage.setItem("leadreachxpro_user", JSON.stringify(res));
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+      toast.success("Login successful!");
 
-  try {
-    const res = await loginUser({
-      email: form.email,
-      password: form.password,
-    }).unwrap();
+      navigate("/dashboard");
 
-    // Save token and user in Redux
-    dispatch(
-      setCredentials({
-        user: res,
-        token: res.accessToken,
-      })
-    );
-
-    // (Optional) Save to localStorage
-    localStorage.setItem("reachiq_user", JSON.stringify(res));
-
-    toast.success("Login successful!");
-
-    navigate("/ReachIQ/dashboard");
-
-  } catch (err) {
-    toast.error(err?.data?.message || "Invalid login");
-  }
-};
+    } catch (err) {
+      toast.error(err?.data?.message || "Invalid login");
+    }
+  };
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0B0F19]/80 backdrop-blur-lg">
-        <div className="relative bg-gradient-to-b from-[#161A29]/95 to-[#0B0F19]/95 border border-[#6C63FF]/40 shadow-[0_0_30px_#6C63FF33] rounded-2xl p-8 w-full max-w-md text-white">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/80 backdrop-blur-lg">
+        <div className="relative bg-gradient-to-b from-gray-800/95 to-gray-900/95 border border-yellow-500/40 shadow-[0_0_30px_#f59e0b33] rounded-2xl p-8 w-full max-w-md text-white">
 
           {/* Close Button */}
           <button
@@ -88,7 +84,10 @@ const handleSubmit = async (e) => {
           </button>
 
           <h2 className="text-3xl font-semibold mb-6 text-center">
-            Login to <span className="text-[#6C63FF] font-bold">ReachIQ</span>
+            Login to{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-yellow-300 font-bold">
+              LeadReachXpro
+            </span>
           </h2>
 
           {/* FORM */}
@@ -98,10 +97,10 @@ const handleSubmit = async (e) => {
               <input
                 type="email"
                 placeholder="Email"
-                className={`w-full p-3 rounded-lg bg-[#191D2F] text-gray-300 placeholder-gray-500 
+                className={`w-full p-3 rounded-lg bg-gray-800 text-gray-300 placeholder-gray-500 
                 focus:outline-none focus:ring-2 ${
-                  errors.email ? "ring-red-500" : "focus:ring-[#6C63FF]"
-                }`}
+                  errors.email ? "ring-red-500" : "focus:ring-yellow-500"
+                } border border-gray-700`}
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 onBlur={validate}
@@ -114,10 +113,10 @@ const handleSubmit = async (e) => {
               <input
                 type="password"
                 placeholder="Password"
-                className={`w-full p-3 rounded-lg bg-[#191D2F] text-gray-300 placeholder-gray-500 
+                className={`w-full p-3 rounded-lg bg-gray-800 text-gray-300 placeholder-gray-500 
                 focus:outline-none focus:ring-2 ${
-                  errors.password ? "ring-red-500" : "focus:ring-[#6C63FF]"
-                }`}
+                  errors.password ? "ring-red-500" : "focus:ring-yellow-500"
+                } border border-gray-700`}
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 onBlur={validate}
@@ -128,21 +127,28 @@ const handleSubmit = async (e) => {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#6C63FF] hover:bg-[#5A52E0] text-white text-lg font-semibold py-3 rounded-lg transition"
+              className="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 text-lg font-semibold py-3 rounded-lg transition"
             >
               {isLoading ? "Logging in..." : "Login"}
             </Button>
           </form>
 
           <p className="text-sm mt-4 text-center text-gray-400">
-            Don’t have an account?{" "}
+            Don't have an account?{" "}
             <span
-              className="text-[#9C8CFF] cursor-pointer hover:underline"
+              className="text-yellow-500 cursor-pointer hover:underline font-medium"
               onClick={onClose}
             >
               Sign up
             </span>
           </p>
+
+          {/* Additional Info */}
+          <div className="mt-6 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+            <p className="text-xs text-gray-400 text-center">
+              Access your bulk email & SMS campaigns. Manage SMTP configurations and Android gateways.
+            </p>
+          </div>
         </div>
       </div>
     </>

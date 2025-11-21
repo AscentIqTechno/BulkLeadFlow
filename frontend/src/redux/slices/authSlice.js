@@ -1,10 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const saved = JSON.parse(localStorage.getItem("reachiq_user"));
+// Get the saved data from localStorage
+const savedData = JSON.parse(localStorage.getItem("reachiq_user"));
 
 const initialState = {
-  user: saved || null,
-  token: saved?.token || saved?.accessToken || null,
+  user: savedData?.user || null,  // Access the user from saved object
+  token: savedData?.token || null, // Access the token from saved object
 };
 
 const authSlice = createSlice({
@@ -17,7 +18,7 @@ const authSlice = createSlice({
       state.user = user;
       state.token = token;
 
-      // Save to localStorage
+      // Save to localStorage as an object containing both user and token
       localStorage.setItem(
         "reachiq_user",
         JSON.stringify({

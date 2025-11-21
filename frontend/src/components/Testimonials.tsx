@@ -11,7 +11,7 @@ const Testimonials = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % testimonials.length);
   };
 
-  const goToSlide = (index) => {
+  const goToSlide = (index: number) => {
     setCurrentIndex(index);
   };
 
@@ -19,23 +19,28 @@ const Testimonials = () => {
     if (isAutoPlaying) {
       autoPlayRef.current = setInterval(nextSlide, 5000);
     }
-    return () => autoPlayRef.current && clearInterval(autoPlayRef.current);
+    return () => {
+      if (autoPlayRef.current) {
+        clearInterval(autoPlayRef.current);
+      }
+    };
   }, [isAutoPlaying]);
 
   return (
     <section
       id="testimonials"
-      className="py-24 bg-gradient-to-b from-crypto-blue to-[#12141C]"
+      className="py-24 bg-gradient-to-b from-gray-900 to-black"
     >
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gradient">
-            What Our Users Say
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-yellow-300">
+              What Our Users Say
+            </span>
           </h2>
           <p className="text-gray-400 max-w-2xl mx-auto">
-            Marketers, recruiters, and founders trust ReachIQ to power their
-            outreach, generate leads, and build stronger email connections.
+            Marketers, recruiters, and founders trust LeadReachXpro to send bulk emails and SMS using their personal accounts with maximum deliverability.
           </p>
         </div>
 
@@ -62,13 +67,13 @@ const Testimonials = () => {
                       ))}
                     </div>
                     <p className="text-lg md:text-xl text-gray-200 mb-8">
-                      “{t.quote}”
+                      "{t.quote}"
                     </p>
                     <div className="flex items-center">
                       <img
                         src={t.avatar}
                         alt={t.author}
-                        className="w-12 h-12 rounded-full object-cover border-2 border-crypto-purple"
+                        className="w-12 h-12 rounded-full object-cover border-2 border-yellow-500"
                       />
                       <div className="ml-4">
                         <p className="font-medium text-white">{t.author}</p>
@@ -89,7 +94,7 @@ const Testimonials = () => {
                 onClick={() => goToSlide(index)}
                 className={`h-2 rounded-full transition-all duration-300 ${
                   currentIndex === index
-                    ? "w-8 bg-crypto-purple"
+                    ? "w-8 bg-yellow-500"
                     : "w-2 bg-gray-500"
                 }`}
                 aria-label={`Go to testimonial ${index + 1}`}

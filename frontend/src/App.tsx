@@ -32,11 +32,11 @@ const App = () => (
         <Routes>
 
           {/* Public Route */}
-          <Route path="/ReachIQ" element={<Index />} />
+          <Route path="/" element={<Index />} />
 
           {/* Private Dashboard */}
           <Route
-            path="/ReachIQ/dashboard"
+            path="/dashboard"
             element={
               <PrivateRoute>
                 <DashboardLayout />

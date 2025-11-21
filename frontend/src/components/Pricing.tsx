@@ -13,41 +13,50 @@ interface PricingPlan {
 
 const pricingPlans: PricingPlan[] = [
   {
-    name: 'Free Trial',
+    name: 'Starter',
     price: { monthly: '$0', annual: '$0' },
-    description: 'Try ReachIQ free for 15 days — no credit card required.',
+    description: 'Perfect for testing and small-scale campaigns.',
     features: [
-      'Full platform access for 15 days',
-      'Basic AI insights',
+      'Up to 500 emails/month',
+      'Up to 100 SMS/month',
+      '1 SMTP configuration',
+      '1 Android gateway connection',
+      'Basic analytics',
       'Community support',
     ],
-    buttonText: 'Start Free Trial',
+    buttonText: 'Start Free',
   },
   {
-    name: 'Basic',
-    price: { monthly: '$5', annual: '$48' },
-    description: 'Perfect for individuals starting their AI-powered trading journey.',
+    name: 'Professional',
+    price: { monthly: '$29', annual: '$290' },
+    description: 'Ideal for growing businesses and marketing teams.',
     features: [
-      'Unlimited access after trial',
-      'Core analytics tools',
-      'Standard AI insights',
-      'Email support',
+      'Up to 10,000 emails/month',
+      'Up to 2,000 SMS/month',
+      '5 SMTP configurations',
+      '3 Android gateway connections',
+      'Advanced analytics',
+      'Priority email support',
+      'Custom templates',
     ],
-    buttonText: 'Get Basic Plan',
+    buttonText: 'Get Started',
   },
   {
-    name: 'Premium',
-    price: { monthly: '$25', annual: '$240' },
-    description: 'Unlock the full power of ReachIQ with premium analytics and insights.',
+    name: 'Enterprise',
+    price: { monthly: '$99', annual: '$990' },
+    description: 'For agencies and high-volume senders.',
     features: [
-      'Everything in Basic',
-      'Advanced analytics dashboard',
-      'Unlimited AI insights',
-      'Priority support',
-      'Early access to new features',
+      'Unlimited emails',
+      'Unlimited SMS',
+      'Unlimited SMTP configurations',
+      'Unlimited gateway connections',
+      'Real-time analytics',
+      '24/7 phone support',
+      'Custom integrations',
+      'Dedicated account manager',
     ],
     highlighted: true,
-    buttonText: 'Go Premium',
+    buttonText: 'Go Enterprise',
   },
 ];
 
@@ -55,22 +64,24 @@ const Pricing = () => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
 
   return (
-    <section id="pricing" className="py-24 bg-[#12141C]">
+    <section id="pricing" className="py-24 bg-gray-900">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gradient">
-            Simple, Transparent Pricing
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-yellow-300">
+              Simple, Transparent Pricing
+            </span>
           </h2>
           <p className="text-gray-400 max-w-2xl mx-auto mb-8">
-            Start free and upgrade anytime. Choose the plan that fits your needs with full transparency.
+            No hidden fees. Use your own email and mobile accounts. Scale as you grow.
           </p>
 
           {/* Toggle Button */}
           <div className="inline-flex p-1 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full">
             <button
               className={`px-4 py-2 rounded-full transition-colors ${
-                billingCycle === 'monthly' ? 'bg-crypto-purple text-white' : 'text-gray-400'
+                billingCycle === 'monthly' ? 'bg-yellow-500 text-gray-900 font-semibold' : 'text-gray-400'
               }`}
               onClick={() => setBillingCycle('monthly')}
             >
@@ -78,11 +89,11 @@ const Pricing = () => {
             </button>
             <button
               className={`px-4 py-2 rounded-full transition-colors ${
-                billingCycle === 'annual' ? 'bg-crypto-purple text-white' : 'text-gray-400'
+                billingCycle === 'annual' ? 'bg-yellow-500 text-gray-900 font-semibold' : 'text-gray-400'
               }`}
               onClick={() => setBillingCycle('annual')}
             >
-              Annual <span className="text-xs font-medium ml-1">Save 20%</span>
+              Annual <span className="text-xs font-medium ml-1">Save 17%</span>
             </button>
           </div>
         </div>
@@ -94,12 +105,12 @@ const Pricing = () => {
               key={index}
               className={`bg-white/5 backdrop-blur-sm border rounded-xl overflow-hidden ${
                 plan.highlighted
-                  ? 'border-crypto-purple relative shadow-xl shadow-crypto-purple/10'
+                  ? 'border-yellow-500 relative shadow-xl shadow-yellow-500/10'
                   : 'border-white/10'
               }`}
             >
               {plan.highlighted && (
-                <div className="bg-crypto-purple text-white text-center py-1 text-sm font-medium">
+                <div className="bg-yellow-500 text-gray-900 text-center py-2 text-sm font-semibold">
                   Most Popular
                 </div>
               )}
@@ -111,7 +122,7 @@ const Pricing = () => {
                     {billingCycle === 'monthly' ? plan.price.monthly : plan.price.annual}
                   </span>
                   <span className="text-gray-400 ml-1">
-                    {plan.price.monthly !== '$0' ? '/month' : ''}
+                    {plan.price.monthly !== '$0' ? (billingCycle === 'monthly' ? '/month' : '/year') : ''}
                   </span>
                 </div>
                 <p className="text-gray-400 mb-6">{plan.description}</p>
@@ -119,19 +130,21 @@ const Pricing = () => {
                 <Button
                   className={`w-full mb-6 ${
                     plan.highlighted
-                      ? 'bg-crypto-purple hover:bg-crypto-dark-purple'
-                      : 'bg-white/10 hover:bg-white/20 text-white'
+                      ? 'bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold'
+                      : plan.name === 'Starter'
+                      ? 'bg-white/10 hover:bg-white/20 text-white'
+                      : 'bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold'
                   }`}
                 >
                   {plan.buttonText}
                 </Button>
 
                 <div>
-                  <p className="text-sm font-medium text-gray-300 mb-4">What’s included:</p>
+                  <p className="text-sm font-medium text-gray-300 mb-4">What's included:</p>
                   <ul className="space-y-3">
                     {plan.features.map((feature, i) => (
                       <li key={i} className="flex items-start">
-                        <Check className="h-5 w-5 text-crypto-purple mr-3 shrink-0" />
+                        <Check className="h-5 w-5 text-yellow-500 mr-3 shrink-0" />
                         <span className="text-gray-400 text-sm">{feature}</span>
                       </li>
                     ))}
@@ -140,6 +153,13 @@ const Pricing = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Additional Info */}
+        <div className="text-center mt-12">
+          <p className="text-gray-400 text-sm">
+            All plans include: Personal account usage • No sending limits (only on Starter) • Real-time analytics • Secure data handling
+          </p>
         </div>
       </div>
     </section>

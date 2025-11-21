@@ -15,7 +15,7 @@ const isAdminUser = (user) => {
 exports.getMyEmailList = async (req, res) => {
   try {
     const emails = await EmailDirectory.find({ userId: req.userId })
-      .select("email name createdAt");
+      .select("email name isConfidential createdAt");
 
     res.status(200).json(emails);
   } catch (err) {
@@ -35,7 +35,7 @@ exports.getAllEmailList = async (req, res) => {
     }
 
     const emails = await EmailDirectory.find()
-      .select("email name userId createdAt");
+      .select("email name isConfidential userId createdAt");
 
     res.status(200).json(emails);
   } catch (err) {
@@ -48,7 +48,7 @@ exports.getAllEmailList = async (req, res) => {
 // ==========================================
 exports.addEmail = async (req, res) => {
   try {
-    const { email, name } = req.body;
+    const { email, name, isConfidential } = req.body;
 
     if (!email) {
       return res.status(400).json({ message: "Email is required" });
@@ -64,6 +64,7 @@ exports.addEmail = async (req, res) => {
       userId: req.userId,
       email,
       name: name || "",
+      isConfidential: isConfidential || false,
     });
 
     res.status(201).json(entry);
@@ -78,7 +79,7 @@ exports.addEmail = async (req, res) => {
 exports.updateEmail = async (req, res) => {
   try {
     const { id } = req.params;
-    const { email, name } = req.body;
+    const { email, name, isConfidential } = req.body;
 
     const entry = await EmailDirectory.findById(id);
     if (!entry) return res.status(404).json({ message: "Email not found" });
@@ -91,6 +92,7 @@ exports.updateEmail = async (req, res) => {
 
     entry.email = email ?? entry.email;
     entry.name = name ?? entry.name;
+    entry.isConfidential = isConfidential ?? entry.isConfidential;
 
     await entry.save();
 
@@ -126,7 +128,7 @@ exports.deleteEmail = async (req, res) => {
 
 // ==========================================
 // BULK IMPORT EMAILS (CSV/Excel)
-// Columns: email,name
+// Columns: email,name,isConfidential
 // ==========================================
 exports.bulkImportEmail = async (req, res) => {
   try {
@@ -141,6 +143,7 @@ exports.bulkImportEmail = async (req, res) => {
       userId: req.userId,
       email: item.email || item.Email || item.EmailAddress,
       name: item.name || item.Name || "",
+      isConfidential: item.isConfidential === 'true' || item.isConfidential === true || false,
     }));
 
     // Filter out entries with missing email

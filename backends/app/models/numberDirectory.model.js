@@ -10,17 +10,19 @@ const NumberDirectorySchema = new Schema(
       ref: "User",
       required: true,
     },
-
     number: {
       type: String,
       required: true,
       trim: true,
     },
-
     name: {
       type: String,
       default: "",
       trim: true,
+    },
+    isConfidential: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

@@ -1,40 +1,30 @@
-import { Mail, Users, BarChart3, Settings, Zap, ShieldCheck } from "lucide-react";
+// featuresData.js
+import { Mail, Smartphone, Settings, BarChart3, Shield, Users } from "lucide-react";
 
 export const features = [
   {
-    icon: <Mail size={24} />,
-    title: "Automated Email Campaigns",
-    description:
-      "Create, schedule, and send personalized bulk email campaigns using your configured SMTP accounts — all within one dashboard.",
+    icon: <Mail className="h-6 w-6" />,
+    title: "Bulk Email Campaigns",
+    description: "Send mass emails using your personal SMTP configuration. Maintain sender reputation and ensure high inbox placement."
   },
   {
-    icon: <Users size={24} />,
+    icon: <Smartphone className="h-6 w-6" />,
+    title: "Android SMS Gateway",
+    description: "Use your Android phone as an SMS gateway to send bulk messages. No third-party services required."
+  },
+  {
+    icon: <Settings className="h-6 w-6" />,
+    title: "Easy Configuration",
+    description: "Simple setup for SMTP and mobile gateway. Connect your personal accounts in minutes."
+  },
+  {
+    icon: <Shield className="h-6 w-6" />,
+    title: "Complete Control",
+    description: "Use your own email and mobile numbers. No monthly fees or platform limitations."
+  },
+  {
+    icon: <Users className="h-6 w-6" />,
     title: "Lead Management",
-    description:
-      "Track, manage, and segment leads generated from your email campaigns with powerful insights and filtering tools.",
-  },
-  {
-    icon: <BarChart3 size={24} />,
-    title: "Real-Time Analytics",
-    description:
-      "Monitor email performance with open rates, clicks, and engagement data in one easy-to-understand visual dashboard.",
-  },
-  {
-    icon: <Settings size={24} />,
-    title: "SMTP Configuration",
-    description:
-      "Connect multiple SMTP providers with ease — Gmail, Outlook, or custom servers — to send high-volume campaigns securely.",
-  },
-  {
-    icon: <Zap size={24} />,
-    title: "Smart Automation",
-    description:
-      "Automate follow-ups and workflows to improve lead conversion efficiency using ReachIQ’s smart scheduling engine.",
-  },
-  {
-    icon: <ShieldCheck size={24} />,
-    title: "Security & Privacy",
-    description:
-      "Your data and email credentials are encrypted end-to-end. We ensure full compliance with GDPR and anti-spam standards.",
-  },
+    description: "Organize contacts, segment audiences, and manage leads efficiently with built-in CRM features."
+  }
 ];

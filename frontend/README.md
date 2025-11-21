@@ -1,10 +1,10 @@
 # ReachIQ – One Page Template
 #### Preview
 
- - [Demo](https://themewagon.github.io/ReachIQ/)
+ - [Demo](https://themewagon.github.io/LeadReachXpro)
 
 #### Download
- - [Download from ThemeWagon](https://themewagon.com/themes/ReachIQ/)
+ - [Download from ThemeWagon](https://themewagon.com/themes/LeadReachXpro)
 
 ## Getting Started
 

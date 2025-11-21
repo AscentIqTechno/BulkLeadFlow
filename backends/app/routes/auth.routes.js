@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const { verifySignUp } = require("../middlewares");
-const controller = require("../controllers/auth.controller");
+const { signup, signin, forgotPassword, verifyOtp, resetPassword, resendOtp, changePassword } = require("../controllers/auth.controller");
 
 // SIGNUP
 router.post(
@@ -11,12 +11,13 @@ router.post(
     verifySignUp.checkDuplicateUsernameOrEmail,
     verifySignUp.checkRolesExisted,
   ],
-  controller.signup
+  signup
 );
 
 // SIGNIN
-router.post("/signin", controller.signin);
+router.post("/signin", signin);
 
+// LOGOUT
 router.post("/logout", (req, res) => {
   try {
     res.clearCookie("token");
@@ -25,5 +26,14 @@ router.post("/logout", (req, res) => {
     return res.status(500).json({ success: false, message: "Logout failed" });
   }
 });
+
+// PASSWORD RESET ROUTES
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-otp", verifyOtp);
+router.post("/reset-password", resetPassword);
+router.post("/resend-otp", resendOtp);
+
+// CHANGE PASSWORD (Protected - requires authentication)
+// router.post("/change-password", authJwt.verifyToken, changePassword);
 
 module.exports = router;

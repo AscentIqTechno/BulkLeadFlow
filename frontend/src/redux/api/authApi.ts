@@ -40,6 +40,47 @@ export const authApi = createApi({
       }),
     }),
 
+    // Password reset endpoints
+    forgotPassword: builder.mutation({
+      query: (email) => ({
+        url: "/auth/forgot-password",
+        method: "POST",
+        body: { email },
+      }),
+    }),
+
+    verifyOtp: builder.mutation({
+      query: ({ email, otp }) => ({
+        url: "/auth/verify-otp",
+        method: "POST",
+        body: { email, otp },
+      }),
+    }),
+
+    resetPassword: builder.mutation({
+      query: ({ email, newPassword, confirmPassword }) => ({
+        url: "/auth/reset-password",
+        method: "POST",
+        body: { email, newPassword, confirmPassword },
+      }),
+    }),
+
+    resendOtp: builder.mutation({
+      query: (email) => ({
+        url: "/auth/resend-otp",
+        method: "POST",
+        body: { email },
+      }),
+    }),
+
+    changePassword: builder.mutation({
+      query: ({ currentPassword, newPassword, confirmPassword }) => ({
+        url: "/auth/change-password",
+        method: "POST",
+        body: { currentPassword, newPassword, confirmPassword },
+      }),
+    }),
+
     fetchUsers: builder.query({
       query: () => "/user/all",
       providesTags: ["User"],
@@ -69,6 +110,11 @@ export const {
   useRegisterUserMutation,
   useLoginUserMutation,
   useLogoutUserMutation,
+  useForgotPasswordMutation,
+  useVerifyOtpMutation,
+  useResetPasswordMutation,
+  useResendOtpMutation,
+  useChangePasswordMutation,
   useFetchUsersQuery,
   useUpdateUserMutation,
   useDeleteUserMutation

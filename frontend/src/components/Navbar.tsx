@@ -1,21 +1,46 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
-import { Link } from "react-router-dom";
 import LoginModal from "@/components/LoginModal";
 import SignupModal from "@/components/SignupModal";
+import ForgotPasswordModal from "@/components/ForgotPassword";
 
 const Navbar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [isSignupOpen, setIsSignupOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState<boolean>(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const [isLoginOpen, setIsLoginOpen] = useState<boolean>(false);
+  const [isSignupOpen, setIsSignupOpen] = useState<boolean>(false);
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const openLogin = (): void => {
+    setIsSignupOpen(false);
+    setIsForgotPasswordOpen(false);
+    setIsLoginOpen(true);
+  };
+
+  const openSignup = (): void => {
+    setIsLoginOpen(false);
+    setIsForgotPasswordOpen(false);
+    setIsSignupOpen(true);
+  };
+
+  const openForgotPassword = (): void => {
+    setIsLoginOpen(false);
+    setIsSignupOpen(false);
+    setIsForgotPasswordOpen(true);
+  };
+
+  const closeAllModals = (): void => {
+    setIsLoginOpen(false);
+    setIsSignupOpen(false);
+    setIsForgotPasswordOpen(false);
+  };
 
   return (
     <>
@@ -55,13 +80,13 @@ const Navbar = () => {
             <Button
               variant="ghost"
               className="text-gray-300 hover:text-white"
-              onClick={() => setIsLoginOpen(true)}
+              onClick={openLogin}
             >
               Login
             </Button>
             <Button
               className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold w-full"
-              onClick={() => setIsSignupOpen(true)}
+              onClick={openSignup}
             >
               Get Started
             </Button>
@@ -96,13 +121,13 @@ const Navbar = () => {
                   <Button
                     variant="ghost"
                     className="text-gray-300 hover:text-white w-full justify-start"
-                    onClick={() => setIsLoginOpen(true)}
+                    onClick={openLogin}
                   >
                     Login
                   </Button>
                   <Button
                     className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold w-full"
-                    onClick={() => setIsSignupOpen(true)}
+                    onClick={openSignup}
                   >
                     Get Started
                   </Button>
@@ -114,8 +139,22 @@ const Navbar = () => {
       </nav>
 
       {/* Modals */}
-      <LoginModal open={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
-      <SignupModal open={isSignupOpen} onClose={() => setIsSignupOpen(false)} />
+      <LoginModal 
+        open={isLoginOpen} 
+        onClose={closeAllModals}
+        onSwitchToSignup={openSignup}
+        onSwitchToForgotPassword={openForgotPassword}
+      />
+      <SignupModal 
+        open={isSignupOpen} 
+        onClose={closeAllModals}
+        onSwitchToLogin={openLogin}
+      />
+      <ForgotPasswordModal 
+        open={isForgotPasswordOpen} 
+        onClose={closeAllModals}
+        onSwitchToLogin={openLogin}
+      />
     </>
   );
 };

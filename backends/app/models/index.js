@@ -10,11 +10,15 @@ db.user = require("./user.model");
 db.role = require("./role.model");
 db.smtp = require("./smtp.model");
 db.campaign = require("./campaign.model");
-db.emailDirectory = require("./emailDirectory.model");  // <-- ADD THIS
-db.SmsGatewayConfig = require("./SmsGatewayConfig.model")
+db.emailDirectory = require("./emailDirectory.model");
+db.SmsGatewayConfig = require("./SmsGatewayConfig.model");
 db.numberDirectory = require("./numberDirectory.model");
 db.smsCampaign = require("./sms_campaign.model");
-db.otp = require("./otp.model")
+db.otp = require("./otp.model");
+// Payment models
+db.plan = require("./plan.model");
+db.subscription = require("./userSubscription.model");
+db.payment = require("./payment.model");
 
 db.ROLES = ["user", "admin", "moderator"];
 

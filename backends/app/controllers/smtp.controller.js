@@ -4,6 +4,23 @@ const SmtpConfig = db.smtp;
 // ➤ CREATE SMTP
 exports.createSmtp = async (req, res) => {
   try {
+    const { subscription } = req;
+    const { planLimits, planUsage } = subscription || {};
+
+    // Check plan limit before creating
+    if (subscription && planLimits && planUsage) {
+      const smtpLimit = planLimits.smtpConfigs;
+
+      // Unlimited plan = -1
+      if (smtpLimit !== -1 && planUsage.smtpConfigsUsed >= smtpLimit) {
+        return res.status(403).json({
+          success: false,
+          message: `SMTP Config limit reached — your plan allows only ${smtpLimit} configs`
+        });
+      }
+    }
+
+    // Create SMTP config
     const smtp = new SmtpConfig({
       userId: req.userId,
       host: req.body.host,
@@ -14,12 +31,30 @@ exports.createSmtp = async (req, res) => {
       secure: req.body.secure || false
     });
 
+    // Increment counter AFTER passing the limit check
+    if (subscription) {
+      subscription.planUsage.smtpConfigsUsed =
+        (subscription.planUsage.smtpConfigsUsed || 0) + 1;
+      subscription.markModified("planUsage");
+      await subscription.save();
+    }
+
     await smtp.save();
-    return res.status(201).send({ message: "SMTP saved successfully", smtp });
+
+    return res.status(201).json({
+      success: true,
+      message: "SMTP saved successfully",
+      smtp
+    });
+
   } catch (err) {
-    res.status(500).send({ message: err.message });
+    console.error("SMTP CREATE ERROR:", err);
+    res.status(500).json({ success: false, message: err.message });
   }
 };
+
+
+
 
 // ➤ READ (GET Logged-in User SMTP List)
 exports.getMySmtps = async (req, res) => {

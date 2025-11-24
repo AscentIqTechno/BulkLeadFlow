@@ -6,30 +6,56 @@ const User = mongoose.model(
     username: String,
     email: String,
     password: String,
+    phone:Number,
+
     roles: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Role"
       }
     ],
-    resetPasswordOtp: {
-      type: String,
+
+    // Points to the user's active subscription
+    subscription: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Subscription"
     },
-    resetPasswordOtpExpires: {
-      type: Date,
+
+    // Points to selected plan (optional)
+    currentPlan: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Plan",
+      default: null
     },
-    resetPasswordToken: {
-      type: String,
+
+    // Razorpay Customer ID
+    razorpayCustomerId: String,
+
+    // Billing address
+    billingAddress: {
+      street: String,
+      city: String,
+      state: String,
+      country: { type: String, default: "India" },
+      zipCode: String,
+      phone: String
     },
-    resetPasswordExpires: {
-      type: Date,
-    },
-    lastLogin: {
-      type: Date
-    }
-  }, {
-    timestamps: true
-  })
+
+    // Password reset
+    resetPasswordOtp: String,
+    resetPasswordOtpExpires: Date,
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
+
+    lastLogin: Date,
+
+    // Account status
+    isActive: { type: Boolean, default: true },
+
+    // Profile completion
+    profileCompleted: { type: Boolean, default: false }
+
+  }, { timestamps: true })
 );
 
 module.exports = User;

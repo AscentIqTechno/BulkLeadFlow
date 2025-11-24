@@ -49,6 +49,27 @@ exports.createAndSendCampaign = async (req, res) => {
     const smtpConfig = await SmtpConfig.findOne({ _id: smtpId, userId });
     if (!smtpConfig) return res.status(400).json({ message: "SMTP configuration not found" });
 
+    // Fetch subscription to track usage
+    const subscription = await Subscription.findOne({ user: userId, isActive: true });
+    const planUsage = subscription?.planUsage;
+    const planLimits = subscription?.planLimits;
+
+    const remainingQuota =
+      planLimits?.emailsPerMonth === -1
+        ? recipientList.length
+        : (planLimits?.emailsPerMonth || 0) - (planUsage?.emailsSent || 0);
+
+    if (remainingQuota <= 0) {
+      return res.status(403).json({
+        success: false,
+        message: "Email limit reached — cannot send any more emails this month"
+      });
+    }
+
+    // Optionally slice recipients to remaining quota
+    const emailsToSend = recipientList.slice(0, remainingQuota);
+    const blockedEmails = recipientList.slice(remainingQuota);
+
     const transporter = nodemailer.createTransport({
       host: smtpConfig.host,
       port: smtpConfig.port,
@@ -59,19 +80,16 @@ exports.createAndSendCampaign = async (req, res) => {
     let sentCount = 0;
     const total = recipientList.length;
 
-    for (const email of recipientList) {
+    for (const email of emailsToSend) {
       try {
-        // 👉 JS-ONLY name extraction
         const extractedName = extractNameFromEmailJS(email);
 
-        // 👉 Save extracted name in directory (but not used in message)
         await EmailDirectory.findOneAndUpdate(
           { userId, email },
           { name: extractedName, email, userId },
           { upsert: true }
         );
 
-        // 👉 Send same message to everyone
         await transporter.sendMail({
           from: smtpConfig.fromEmail,
           to: email,
@@ -84,14 +102,14 @@ exports.createAndSendCampaign = async (req, res) => {
         });
 
         sentCount++;
-        console.log(`Sent ${sentCount}/${total}`);
+        console.log(`Sent ${sentCount}/${emailsToSend.length}`);
 
       } catch (err) {
         console.error(`Failed email ${email}:`, err.message);
       }
     }
 
-    // Save campaign
+    // Save campaign with all recipients, mark blocked ones
     const campaign = new Campaign({
       userId,
       name,
@@ -99,20 +117,29 @@ exports.createAndSendCampaign = async (req, res) => {
       smtpId,
       recipients: recipientList,
       message,
-      status: "sent"
+      status: blockedEmails.length > 0 ? "partial" : "sent",
+      blockedRecipients: blockedEmails
     });
 
     const savedCampaign = await campaign.save();
+
+    // Update subscription usage
+    if (subscription && planUsage) {
+      planUsage.emailsSent = (planUsage.emailsSent || 0) + sentCount;
+      subscription.markModified("planUsage");
+      await subscription.save();
+    }
 
     res.status(201).json({
       message: "Campaign sent and saved successfully",
       campaign: savedCampaign,
       totalRecipients: total,
-      sentCount
+      sentCount,
+      blockedRecipients: blockedEmails.length
     });
 
   } catch (err) {
-    console.error(err);
+    console.error("SEND CAMPAIGN ERROR:", err);
     res.status(500).json({ message: "Error sending campaign", error: err.message });
   }
 };

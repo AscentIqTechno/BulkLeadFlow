@@ -13,9 +13,10 @@ const generateOtp = () => {
 };
 
 // SIGNUP
+// SIGNUP
 exports.signup = async (req, res) => {
   try {
-    const { username, email, password, roles } = req.body;
+    const { username, email, password, phone, roles } = req.body;
 
     // Validate required fields
     if (!username || !email || !password) {
@@ -25,15 +26,23 @@ exports.signup = async (req, res) => {
       });
     }
 
-    // Check if user already exists
+    // Optional: Validate phone
+    // if (!phone) {
+    //   return res.status(400).send({
+    //     success: false,
+    //     message: "Phone number is required"
+    //   });
+    // }
+
+    // Check if user already exists (email / username / phone)
     const existingUser = await User.findOne({ 
-      $or: [{ email }, { username }] 
+      $or: [{ email }, { username }, { phone }] 
     });
     
     if (existingUser) {
       return res.status(400).send({
         success: false,
-        message: "User with this email or username already exists!"
+        message: "User with this email, username or phone already exists!"
       });
     }
 
@@ -41,6 +50,7 @@ exports.signup = async (req, res) => {
     const user = new User({
       username,
       email,
+      phone,                    // <<<<<< ADDED HERE
       password: bcrypt.hashSync(password, 8),
     });
 
@@ -71,6 +81,7 @@ exports.signup = async (req, res) => {
     });
   }
 };
+
 
 // SIGNIN
 exports.signin = async (req, res) => {
@@ -128,6 +139,7 @@ exports.signin = async (req, res) => {
       id: user._id,
       username: user.username,
       email: user.email,
+      phone:user.phone,
       roles: authorities,
       accessToken: token,
     });

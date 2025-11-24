@@ -3,10 +3,10 @@ const router = express.Router();
 
 const controller = require("../controllers/sms_campaign.controller");
 const authJwt = require("../middlewares/authJwt");
+const planUsageMiddleware = require("../middlewares/planUsage.middleware");
 
-// BULK SMS SEND
-router.post("/", authJwt.verifyToken, controller.sendBulkSms);
-
+// BULK SMS SEND → check plan usage
+router.post("/", authJwt.verifyToken, planUsageMiddleware, controller.sendBulkSms);
 
 // GET ALL CAMPAIGNS
 router.get("/", authJwt.verifyToken, controller.getSMScompain);
@@ -19,19 +19,5 @@ router.put("/:id", authJwt.verifyToken, controller.updateSMScompain);
 
 // DELETE CAMPAIGN
 router.delete("/:id", authJwt.verifyToken, controller.deleteCampaign);
-
-// UPDATE CAMPAIGN
-router.put(
-  "/:id",
-  authJwt.verifyToken,
-  controller.updateSMScompain
-);
-
-// DELETE CAMPAIGN
-router.delete(
-  "/:id",
-  authJwt.verifyToken,
-  controller.deleteCampaign
-);
 
 module.exports = router;

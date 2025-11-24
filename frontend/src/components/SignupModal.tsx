@@ -13,16 +13,24 @@ interface FormData {
   name: string;
   email: string;
   password: string;
+  phone: string;
 }
 
 interface FormErrors {
   name?: string;
   email?: string;
   password?: string;
+  phone?: string;
 }
 
 const SignupModal = ({ open, onClose, onSwitchToLogin }: SignupModalProps) => {
-  const [form, setForm] = useState<FormData>({ name: "", email: "", password: "" });
+  const [form, setForm] = useState<FormData>({
+    name: "",
+    email: "",
+    password: "",
+    phone: "",
+  });
+
   const [errors, setErrors] = useState<FormErrors>({});
   const [registerUser, { isLoading }] = useRegisterUserMutation();
 
@@ -31,17 +39,21 @@ const SignupModal = ({ open, onClose, onSwitchToLogin }: SignupModalProps) => {
   const validate = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (!form.name || form.name.trim() === "") {
-      newErrors.name = "Full name is required.";
-    }
+    if (!form.name.trim()) newErrors.name = "Full name is required.";
 
-    if (!form.email || form.email.trim() === "") {
+    if (!form.email.trim()) {
       newErrors.email = "Email is required.";
     } else if (!/^\S+@\S+\.\S+$/.test(form.email)) {
       newErrors.email = "Enter a valid email.";
     }
 
-    if (!form.password || form.password.trim() === "") {
+    if (!form.phone.trim()) {
+      newErrors.phone = "Phone number is required.";
+    } else if (!/^[0-9]{10}$/.test(form.phone)) {
+      newErrors.phone = "Enter a valid 10-digit phone number.";
+    }
+
+    if (!form.password.trim()) {
       newErrors.password = "Password is required.";
     } else if (form.password.length < 6) {
       newErrors.password = "Password must be at least 6 characters.";
@@ -53,20 +65,18 @@ const SignupModal = ({ open, onClose, onSwitchToLogin }: SignupModalProps) => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-
-    if (!validate()) {
-      return;
-    }
+    if (!validate()) return;
 
     try {
       const res = await registerUser({
         username: form.name,
         email: form.email,
         password: form.password,
+        phone: form.phone, // ✅ added here
       }).unwrap();
 
       toast.success("Account created successfully!");
-      setForm({ name: "", email: "", password: "" });
+      setForm({ name: "", email: "", password: "", phone: "" });
       setTimeout(onClose, 1500);
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to register user!");
@@ -80,8 +90,11 @@ const SignupModal = ({ open, onClose, onSwitchToLogin }: SignupModalProps) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/80 backdrop-blur-lg">
-      <div className="relative bg-gradient-to-b from-gray-800/95 to-gray-900/95 border border-yellow-500/40 shadow-[0_0_30px_#f59e0b33] rounded-2xl p-8 w-full max-w-md text-white">
-        {/* Close Button */}
+      <div className="relative bg-gradient-to-b from-gray-800/95 to-gray-900/95 
+        border border-yellow-500/40 shadow-[0_0_30px_#f59e0b33] rounded-2xl p-8 
+        w-full max-w-md text-white">
+
+        {/* Close */}
         <button
           className="absolute top-3 right-3 text-gray-400 hover:text-white transition"
           onClick={onClose}
@@ -99,15 +112,15 @@ const SignupModal = ({ open, onClose, onSwitchToLogin }: SignupModalProps) => {
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
+
           {/* Name */}
           <div className="mb-4">
             <input
               type="text"
               placeholder="Full Name"
-              className={`w-full p-3 rounded-lg bg-gray-800 text-gray-300 placeholder-gray-500 
-              focus:outline-none focus:ring-2 ${
-                errors.name ? "ring-red-500" : "focus:ring-yellow-500"
-              } border border-gray-700`}
+              className={`w-full p-3 rounded-lg bg-gray-800 text-gray-300 
+              placeholder-gray-500 border border-gray-700 focus:outline-none 
+              focus:ring-2 ${errors.name ? "ring-red-500" : "focus:ring-yellow-500"}`}
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               onBlur={validate}
@@ -120,10 +133,9 @@ const SignupModal = ({ open, onClose, onSwitchToLogin }: SignupModalProps) => {
             <input
               type="email"
               placeholder="Email"
-              className={`w-full p-3 rounded-lg bg-gray-800 text-gray-300 placeholder-gray-500 
-              focus:outline-none focus:ring-2 ${
-                errors.email ? "ring-red-500" : "focus:ring-yellow-500"
-              } border border-gray-700`}
+              className={`w-full p-3 rounded-lg bg-gray-800 text-gray-300 
+              placeholder-gray-500 border border-gray-700 focus:outline-none 
+              focus:ring-2 ${errors.email ? "ring-red-500" : "focus:ring-yellow-500"}`}
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               onBlur={validate}
@@ -131,15 +143,29 @@ const SignupModal = ({ open, onClose, onSwitchToLogin }: SignupModalProps) => {
             {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email}</p>}
           </div>
 
+          {/* Phone */}
+          <div className="mb-4">
+            <input
+              type="text"
+              placeholder="Phone Number"
+              className={`w-full p-3 rounded-lg bg-gray-800 text-gray-300 
+              placeholder-gray-500 border border-gray-700 focus:outline-none 
+              focus:ring-2 ${errors.phone ? "ring-red-500" : "focus:ring-yellow-500"}`}
+              value={form.phone}
+              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              onBlur={validate}
+            />
+            {errors.phone && <p className="text-red-400 text-sm mt-1">{errors.phone}</p>}
+          </div>
+
           {/* Password */}
           <div className="mb-6">
             <input
               type="password"
               placeholder="Password"
-              className={`w-full p-3 rounded-lg bg-gray-800 text-gray-300 placeholder-gray-500 
-              focus:outline-none focus:ring-2 ${
-                errors.password ? "ring-red-500" : "focus:ring-yellow-500"
-              } border border-gray-700`}
+              className={`w-full p-3 rounded-lg bg-gray-800 text-gray-300 
+              placeholder-gray-500 border border-gray-700 focus:outline-none 
+              focus:ring-2 ${errors.password ? "ring-red-500" : "focus:ring-yellow-500"}`}
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               onBlur={validate}
@@ -147,17 +173,18 @@ const SignupModal = ({ open, onClose, onSwitchToLogin }: SignupModalProps) => {
             {errors.password && <p className="text-red-400 text-sm mt-1">{errors.password}</p>}
           </div>
 
-          {/* Submit Button */}
+          {/* Button */}
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 text-lg font-semibold py-3 rounded-lg transition"
+            className="w-full bg-yellow-500 hover:bg-yellow-600 
+            text-gray-900 text-lg font-semibold py-3 rounded-lg transition"
           >
             {isLoading ? "Creating Account..." : "Create Account"}
           </Button>
         </form>
 
-        {/* Footer Text */}
+        {/* Footer */}
         <p className="text-sm mt-4 text-center text-gray-400">
           Already have an account?{" "}
           <span
@@ -168,10 +195,9 @@ const SignupModal = ({ open, onClose, onSwitchToLogin }: SignupModalProps) => {
           </span>
         </p>
 
-        {/* Additional Info */}
         <div className="mt-6 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
           <p className="text-xs text-gray-400 text-center">
-            Start sending bulk emails with your personal SMTP and SMS with Android gateway. 
+            Start sending bulk emails with your personal SMTP and SMS gateway.
             Free plan includes 500 emails & 100 SMS/month.
           </p>
         </div>

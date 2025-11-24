@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Sidebar from "@/components/Sidbar";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Menu, LogOut, User, ChevronDown } from "lucide-react";
+import { Menu, LogOut, User, ChevronDown, CheckCircle } from "lucide-react";
 import { authApi } from "@/redux/api/authApi";
 import { useSelector } from "react-redux";
 
@@ -97,18 +97,28 @@ const DashboardLayout = () => {
                   className="w-9 h-9 rounded-full border-2 border-yellow-500"
                 />
                 <div className="hidden md:flex flex-col items-start">
-                  <span className="text-gray-800 font-medium text-sm">
+                  <span className="text-gray-800 font-medium text-sm flex items-center gap-1">
                     {user?.username}
+
+                    {/* Premium Badge */}
+                    {user?.currentPlan && user?.subscriptionStatus === "active" && (
+                      <CheckCircle
+                        size={14}
+                        className="text-blue-500"
+                       
+                      />
+                    )}
                   </span>
+
                   <span className="text-gray-500 text-xs">
                     {user?.email}
+
                   </span>
                 </div>
-                <ChevronDown 
-                  size={16} 
-                  className={`text-gray-500 transition-transform ${
-                    isUserDropdownOpen ? 'rotate-180' : ''
-                  }`}
+                <ChevronDown
+                  size={16}
+                  className={`text-gray-500 transition-transform ${isUserDropdownOpen ? 'rotate-180' : ''
+                    }`}
                 />
               </button>
 

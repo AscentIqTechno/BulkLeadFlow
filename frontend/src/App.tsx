@@ -21,6 +21,7 @@ import EmailDirectoryList from "./pages/directory/EmailDirectoryList";
 import SmsGatewayConfigPage from "./pages/SMS/SmsGatewayConfigPage";
 import SmsSendPage from "./pages/SMS/SmsSendPage";
 import SmsNumberDirectoryPage from "./pages/SMS/SmsNumberDirectoryPage";
+import BillingPage from "./pages/Billing/billingPayment";
 
 const App = () => (
   <Provider store={store}>
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="campaigns" element={<CampaignsPage />} />
             <Route path="leads" element={<LeadsPage />} />
             <Route path="email_directory" element={<EmailDirectoryList />} />
+            <Route path="payment_billing"element={<BillingPage />} />
 
             {/* ⭐ NEW WHATSAPP ROUTES */}
             <Route path="sms_config" element={<SmsGatewayConfigPage />} />

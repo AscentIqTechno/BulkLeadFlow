@@ -97,10 +97,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
 
           {/* Billing & Payments */}
           <Link
-            to="/dashboard/billing"
+            to="/dashboard/payment_billing"
             className={clsx(
               "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
-              location.pathname.includes("/billing")
+              location.pathname.includes("/payment_billing")
                 ? "bg-yellow-500 text-gray-900 font-semibold shadow-md"
                 : "text-gray-300 hover:bg-gray-800 hover:text-white"
             )}

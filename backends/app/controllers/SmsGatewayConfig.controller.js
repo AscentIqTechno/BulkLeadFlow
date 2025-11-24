@@ -4,6 +4,22 @@ const SmsGatewayConfig = db.SmsGatewayConfig;
 // ➤ CREATE SMS GATEWAY CONFIG
 exports.createSmsGateway = async (req, res) => {
   try {
+    const { subscription } = req;
+    const { planLimits, planUsage } = subscription || {};
+
+    // Check plan limit for Android Gateways
+    if (subscription && planLimits && planUsage) {
+      const gatewayLimit = planLimits.androidGateways;
+
+      if (gatewayLimit !== -1 && planUsage.androidGatewaysUsed >= gatewayLimit) {
+        return res.status(403).json({
+          success: false,
+          message: `Android Gateway limit reached — your plan allows only ${gatewayLimit} gateways`
+        });
+      }
+    }
+
+    // Create SMS Gateway config
     const smsConfig = new SmsGatewayConfig({
       userId: req.userId,
       username: req.body.username,
@@ -12,13 +28,25 @@ exports.createSmsGateway = async (req, res) => {
       port: req.body.port || "8080",
     });
 
+    // Increment usage counter after passing the limit check
+    if (subscription) {
+      subscription.planUsage.androidGatewaysUsed =
+        (subscription.planUsage.androidGatewaysUsed || 0) + 1;
+      subscription.markModified("planUsage");
+      await subscription.save();
+    }
+
     await smsConfig.save();
-    return res.status(201).send({
+
+    return res.status(201).json({
+      success: true,
       message: "SMS Gateway config saved successfully",
-      smsConfig,
+      smsConfig
     });
+
   } catch (err) {
-    return res.status(500).send({ message: err.message });
+    console.error("SMS GATEWAY CREATE ERROR:", err);
+    return res.status(500).json({ success: false, message: err.message });
   }
 };
 

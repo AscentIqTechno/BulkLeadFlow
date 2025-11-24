@@ -7,7 +7,8 @@ import { campaignApi } from "./api/campaignApi";
 import { emailDirectoryApi } from "./api/emailDirectoryApi";
 import { smsCampaignApi } from "./api/sms_compaign.api";
 import { numberDirectoryApi } from "./api/numberDirectoryApi";
-
+import { paymentApi } from './api/paymentApi';
+import { planApi } from"./api/planApi";
 
 import authReducer from "./slices/authSlice";
 
@@ -22,6 +23,8 @@ export const store = configureStore({
     [smsApi.reducerPath]: smsApi.reducer,
     [numberDirectoryApi.reducerPath]: numberDirectoryApi.reducer,
     [smsCampaignApi.reducerPath]: smsCampaignApi.reducer,
+    [paymentApi.reducerPath]: paymentApi.reducer,
+    [planApi.reducerPath]: planApi.reducer,      // ⭐ ADD THIS
   },
 
   middleware: (getDefaultMiddleware) =>
@@ -33,5 +36,8 @@ export const store = configureStore({
       .concat(emailDirectoryApi.middleware)
       .concat(smsApi.middleware)
       .concat(numberDirectoryApi.middleware)
-      .concat(smsCampaignApi.middleware),
+      .concat(smsCampaignApi.middleware)
+      .concat(paymentApi.middleware)
+      .concat(planApi.middleware)                 // ⭐ ADD THIS
 });
+

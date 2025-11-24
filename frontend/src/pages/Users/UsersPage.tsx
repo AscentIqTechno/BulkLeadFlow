@@ -21,6 +21,7 @@ const UsersPage = () => {
   const [form, setForm] = useState({
     name: "",
     email: "",
+    phone: "",
     role: "user",
     password: "",
   });
@@ -30,7 +31,7 @@ const UsersPage = () => {
   // -------------------
   const openAddModal = () => {
     setEditId(null);
-    setForm({ name: "", email: "", role: "user", password: "" });
+    setForm({ name: "", email: "", phone: "", role: "user", password: "" });
     setIsModalOpen(true);
   };
 
@@ -39,6 +40,7 @@ const UsersPage = () => {
     setForm({
       name: u.name,
       email: u.email,
+      phone: u.phone || "",
       role: u.role.toLowerCase(),
       password: "",
     });
@@ -54,6 +56,7 @@ const UsersPage = () => {
     // VALIDATION
     if (!form.name.trim()) return toast.error("Name is required");
     if (!form.email.trim()) return toast.error("Email is required");
+    if (!form.phone.trim()) return toast.error("Phone is required");
     if (!editId && !form.password.trim())
       return toast.error("Password is required");
 
@@ -64,6 +67,7 @@ const UsersPage = () => {
           data: {
             username: form.name,
             email: form.email,
+            phone: form.phone,
             roles: [form.role],
           },
         }).unwrap();
@@ -73,6 +77,7 @@ const UsersPage = () => {
         await registerUser({
           username: form.name,
           email: form.email,
+          phone: form.phone,
           role: form.role,
           password: form.password,
         }).unwrap();
@@ -107,6 +112,7 @@ const UsersPage = () => {
     id: u._id,
     name: u.username,
     email: u.email,
+    phone: u.phone || "",
     role: u.roles?.[0]?.name || "user",
   }));
 
@@ -114,6 +120,7 @@ const UsersPage = () => {
   const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.role.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -188,8 +195,6 @@ const UsersPage = () => {
         </div>
       </div>
 
-     
-
       {/* Users Table */}
       <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
         <div className="overflow-x-auto">
@@ -198,6 +203,7 @@ const UsersPage = () => {
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">User</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Email</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Phone</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Role</th>
                 <th className="px-6 py-4 text-center text-sm font-semibold text-gray-300">Actions</th>
               </tr>
@@ -215,6 +221,7 @@ const UsersPage = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-gray-300">{user.email}</td>
+                  <td className="px-6 py-4 text-gray-300">{user.phone}</td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
                       user.role === "admin" 
@@ -320,6 +327,20 @@ const UsersPage = () => {
                   />
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Phone Number
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter phone number"
+                    value={form.phone}
+                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+
                 {!editId && (
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -346,7 +367,7 @@ const UsersPage = () => {
                     className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                   >
                     <option value="user">User</option>
-                    <option value="admin">Administrator</option>
+                    <option value="admin">Admin</option>
                   </select>
                 </div>
 

@@ -42,7 +42,7 @@ exports.getAllUsers = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   try {
-    const { username, email, roles } = req.body;
+    const { username, email, roles,phone } = req.body;
 
     let roleIds = [];
 
@@ -64,6 +64,7 @@ exports.updateUser = async (req, res) => {
       {
         username,
         email,
+        phone,
         roles: roleIds,  // Must be ObjectId[]
       },
       { new: true }

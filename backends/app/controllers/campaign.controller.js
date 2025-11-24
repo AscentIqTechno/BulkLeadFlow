@@ -4,6 +4,7 @@ const SmtpConfig = db.smtp;
 const nodemailer = require("nodemailer");
 const extractNameFromEmail = require("../helpers/extractName.helper");
 const EmailDirectory = db.emailDirectory;
+const Subscription = db.subscription;
 /**
  * Send campaign emails and save the campaign
  */

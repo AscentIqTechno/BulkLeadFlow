@@ -50,7 +50,8 @@ const smsRoutes = require("./app/routes/SmsGatewayConfig.routes");
 const numberDirectoryRoutes = require("./app/routes/numberDirectory.routes");
 const smsCampaignRoutes = require("./app/routes/sms_campaign.routes");
 const paymentRoutes = require('./app/routes/payment.routes');
-const plansRoute = require("./app/routes/plan.routes")
+const plansRoute = require("./app/routes/plan.routes");
+const dashboardRoute = require("./app/routes/dashboard.routes");
 
 app.use('/api/payment', paymentRoutes);
 app.use("/api/sms_campaign", smsCampaignRoutes);
@@ -62,6 +63,7 @@ app.use("/api/email_directory", emailDirectoryRoutes);
 app.use("/api", smsRoutes);
 app.use("/api/number_directory", numberDirectoryRoutes);
 app.use("/api",plansRoute);
+app.use("/api/dashboard",dashboardRoute);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

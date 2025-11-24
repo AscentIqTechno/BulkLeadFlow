@@ -2,6 +2,7 @@ const db = require("../models");
 const SmsCampaign = db.smsCampaign;
 const SmsGatewayConfig = db.SmsGatewayConfig;
 const axios = require("axios");
+const Subscription = db.subscription;
 
 // ------------------ SEND BULK SMS ------------------
 // exports.sendBulkSms = async (req, res) => {

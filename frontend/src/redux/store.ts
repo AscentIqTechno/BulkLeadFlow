@@ -1,14 +1,15 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { apiSlice } from "./api/apiSlice";
 import { authApi } from "./api/authApi";
-import { smsApi } from "./api/smsApi"; // correct
+import { smsApi } from "./api/smsApi";
 import { smtpApi } from "./api/smtpApi";
 import { campaignApi } from "./api/campaignApi";
 import { emailDirectoryApi } from "./api/emailDirectoryApi";
 import { smsCampaignApi } from "./api/sms_compaign.api";
 import { numberDirectoryApi } from "./api/numberDirectoryApi";
 import { paymentApi } from './api/paymentApi';
-import { planApi } from"./api/planApi";
+import { planApi } from "./api/planApi";
+import { dashboardApi } from "./api/dashboardApi"; // ✅ IMPORT DASHBOARD API
 
 import authReducer from "./slices/authSlice";
 
@@ -24,7 +25,8 @@ export const store = configureStore({
     [numberDirectoryApi.reducerPath]: numberDirectoryApi.reducer,
     [smsCampaignApi.reducerPath]: smsCampaignApi.reducer,
     [paymentApi.reducerPath]: paymentApi.reducer,
-    [planApi.reducerPath]: planApi.reducer,      // ⭐ ADD THIS
+    [planApi.reducerPath]: planApi.reducer,
+    [dashboardApi.reducerPath]: dashboardApi.reducer, // ✅ ADD DASHBOARD API
   },
 
   middleware: (getDefaultMiddleware) =>
@@ -38,6 +40,6 @@ export const store = configureStore({
       .concat(numberDirectoryApi.middleware)
       .concat(smsCampaignApi.middleware)
       .concat(paymentApi.middleware)
-      .concat(planApi.middleware)                 // ⭐ ADD THIS
+      .concat(planApi.middleware)
+      .concat(dashboardApi.middleware) // ✅ ADD DASHBOARD API
 });
-

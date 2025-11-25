@@ -16,7 +16,9 @@ import {
   Smartphone,
   CreditCard,
   Database,
-  Cpu
+  Cpu,
+  FileText,
+  Wallet
 } from "lucide-react";
 import clsx from "clsx";
 import { useSelector } from "react-redux";
@@ -34,6 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
   // Collapsible States
   const [openEmail, setOpenEmail] = useState(true);
   const [openSms, setOpenSms] = useState(false);
+  const [openSettings, setOpenSettings] = useState(false);
 
   return (
     <>
@@ -244,35 +247,56 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
             )}
           </div>
 
-          {/* System Status */}
-          <Link
-            to="/dashboard/system"
-            className={clsx(
-              "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 mt-4",
-              location.pathname.includes("/system")
-                ? "bg-yellow-500 text-gray-900 font-semibold shadow-md"
-                : "text-gray-300 hover:bg-gray-800 hover:text-white"
-            )}
-            onClick={() => setIsOpen(false)}
-          >
-            <Cpu size={18} />
-            <span>System Status</span>
-          </Link>
+         
+          {/* Settings Collapsible Section */}
+          <div className="mt-3">
+            <button
+              className="flex items-center justify-between w-full px-4 py-3 text-left rounded-lg transition-all duration-200 hover:bg-gray-800 group"
+              onClick={() => setOpenSettings(!openSettings)}
+            >
+              <span className="flex items-center gap-3 text-gray-300 group-hover:text-white font-medium">
+                <Settings size={18} /> Settings
+              </span>
+              {openSettings ? 
+                <ChevronDown size={16} className="text-gray-400 group-hover:text-white" /> : 
+                <ChevronRight size={16} className="text-gray-400 group-hover:text-white" />
+              }
+            </button>
 
-          {/* Settings */}
-          <Link
-            to="/dashboard/settings"
-            className={clsx(
-              "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
-              location.pathname.includes("/settings")
-                ? "bg-yellow-500 text-gray-900 font-semibold shadow-md"
-                : "text-gray-300 hover:bg-gray-800 hover:text-white"
+            {openSettings && (
+              <div className="ml-6 mt-2 space-y-1 border-l-2 border-gray-700 pl-3">
+                {/* Plan Management */}
+             <Link
+  to="/dashboard/settings/plan_management"
+  className={clsx(
+    "flex items-center gap-2 text-sm px-3 py-2 rounded-md transition-all duration-200",
+    location.pathname.includes("/plan_management")
+      ? "bg-yellow-500 text-gray-900 font-medium shadow-sm"
+      : "text-gray-400 hover:bg-gray-800 hover:text-white"
+  )}
+  onClick={() => setIsOpen(false)}
+>
+  <FileText size={14} />
+  Plan Management
+</Link>
+
+<Link
+  to="/dashboard/settings/razorpay_config"
+  className={clsx(
+    "flex items-center gap-2 text-sm px-3 py-2 rounded-md transition-all duration-200",
+    location.pathname.includes("/razorpay_config")
+      ? "bg-yellow-500 text-gray-900 font-medium shadow-sm"
+      : "text-gray-400 hover:bg-gray-800 hover:text-white"
+  )}
+  onClick={() => setIsOpen(false)}
+>
+  <Wallet size={14} />
+  Razorpay Configuration
+</Link>
+
+              </div>
             )}
-            onClick={() => setIsOpen(false)}
-          >
-            <Settings size={18} />
-            <span>Settings</span>
-          </Link>
+          </div>
         </nav>
 
         {/* Footer Info */}

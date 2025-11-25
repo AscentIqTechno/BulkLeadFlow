@@ -1,7 +1,7 @@
-import { Toaster } from "react-hot-toast";     // ✅ using ONLY react-hot-toast
+import { Toaster } from "react-hot-toast";     
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Provider } from "react-redux";
-import { store } from "./redux/store"; // ✅ works because store.ts exists
+import { store } from "./redux/store"; 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Index from "./pages/Index";
@@ -17,15 +17,17 @@ import DashboardLayout from "./Layouts/DashboardLayout";
 import PrivateRoute from "./components/PrivateRoute";
 import EmailDirectoryList from "./pages/directory/EmailDirectoryList";
 
-// ⭐ NEW WHATSAPP PAGES
+// SMS Pages
 import SmsGatewayConfigPage from "./pages/SMS/SmsGatewayConfigPage";
 import SmsSendPage from "./pages/SMS/SmsSendPage";
 import SmsNumberDirectoryPage from "./pages/SMS/SmsNumberDirectoryPage";
+
 import BillingPage from "./pages/Billing/billingPayment";
+import PlanManagement from "./pages/settings/PlanManagement";
+import RazorpayConfigManager from "./pages/settings/RazorpayConfigForm";
 
 const App = () => (
   <Provider store={store}>
-    {/* Global Toaster */}
     <Toaster position="top-right" />
 
     <TooltipProvider>
@@ -51,9 +53,13 @@ const App = () => (
             <Route path="campaigns" element={<CampaignsPage />} />
             <Route path="leads" element={<LeadsPage />} />
             <Route path="email_directory" element={<EmailDirectoryList />} />
-            <Route path="payment_billing"element={<BillingPage />} />
+            <Route path="payment_billing" element={<BillingPage />} />
 
-            {/* ⭐ NEW WHATSAPP ROUTES */}
+            {/* ✅ FIXED SETTINGS ROUTES */}
+            <Route path="settings/plan_management" element={<PlanManagement />} />
+            <Route path="settings/razorpay_config" element={<RazorpayConfigManager />} />
+
+            {/* SMS ROUTES */}
             <Route path="sms_config" element={<SmsGatewayConfigPage />} />
             <Route path="sms_campaigns" element={<SmsSendPage />} />
             <Route path="sms_directory" element={<SmsNumberDirectoryPage />} />

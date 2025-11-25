@@ -52,6 +52,7 @@ const smsCampaignRoutes = require("./app/routes/sms_campaign.routes");
 const paymentRoutes = require('./app/routes/payment.routes');
 const plansRoute = require("./app/routes/plan.routes");
 const dashboardRoute = require("./app/routes/dashboard.routes");
+const razorpayRoute = require("./app/routes/razorpayConfig.routes");
 
 app.use('/api/payment', paymentRoutes);
 app.use("/api/sms_campaign", smsCampaignRoutes);
@@ -64,6 +65,7 @@ app.use("/api", smsRoutes);
 app.use("/api/number_directory", numberDirectoryRoutes);
 app.use("/api",plansRoute);
 app.use("/api/dashboard",dashboardRoute);
+app.use("/api/razorpay" ,razorpayRoute);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

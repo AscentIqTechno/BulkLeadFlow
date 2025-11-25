@@ -5,22 +5,9 @@ const User = db.user;
 const Plan = db.plan;
 const Subscription = db.subscription;
 const Payment = db.payment;
+const RazorpayConfig = require("../models/razorpayConfig.model");
 
-// Initialize Razorpay
-let razorpay;
-try {
-  if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
-    razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET
-    });
-    console.log('✅ Razorpay initialized successfully');
-  } else {
-    console.warn('⚠️  Razorpay credentials missing. Payment features will be disabled.');
-  }
-} catch (error) {
-  console.error('❌ Razorpay initialization failed:', error.message);
-}
+
 
 // Get all active plans
 exports.getPlans = async (req, res) => {
@@ -41,58 +28,59 @@ exports.getPlans = async (req, res) => {
 
 exports.createOrder = async (req, res) => {
   try {
-    console.log("🔧 Creating Razorpay order...");
-
-    if (!razorpay) {
-      return res.status(503).json({
-        success: false,
-        message: "Payment gateway is not configured"
-      });
-    }
-
     const { planId } = req.body;
-    const userId = req.userId;
-
-    // Fetch real plan
     const plan = await Plan.findById(planId);
+
     if (!plan) {
-      return res.status(404).json({
-        success: false,
-        message: "Plan not found"
-      });
+      return res.status(404).send({ success: false, message: "Plan not found" });
     }
 
-    // Free plan handling
-    if (plan.price === 0) {
-      return await handleFreeSubscription(userId, planId, res);
+    const razorConfig = await RazorpayConfig.findOne({ isActive: true }).select("+keySecret");
+    if (!razorConfig) {
+      return res.status(400).send({ success: false, message: "Razorpay config missing" });
     }
 
-    const amount = plan.price * 100; // Razorpay requires paisa
+    const razorpay = new Razorpay({
+      key_id: razorConfig.keyId,
+      key_secret: razorConfig.keySecret,
+    });
 
-    const order = await razorpay.orders.create({
-      amount,
+    // 🔥 FIX RECEIPT HERE — short & safe (< 40 chars)
+    const receipt = `rcpt_${Date.now().toString().slice(-10)}`;
+
+    const options = {
+      amount: plan.price * 100,
       currency: "INR",
-      receipt: `order_${Date.now()}`,
+      receipt,   // <-- FIXED HERE
       notes: {
         planId,
-        userId: userId.toString(),
-        planName: plan.name
+        userId: req.userId,
+      }
+    };
+
+    console.log("🧾 Receipt Sent To Razorpay:", receipt);
+
+    const order = await razorpay.orders.create(options);
+
+    return res.send({
+      success: true,
+      data: {
+        id: order.id,
+        amount: order.amount,
+        currency: order.currency,
+        keyId: razorConfig.keyId,
       }
     });
 
-    console.log(`✅ Razorpay order created: ${order.id}`);
-
-    return res.status(200).json({
-      success: true,
-      message: "Order created successfully",
-      data: order
-    });
-
   } catch (error) {
-    console.error("❌ Create order error:", error);
-    return res.status(500).json({ success: false, message: "Failed to create payment order" });
+    console.log("❌ Create order error:", error);
+    return res.status(400).send({
+      success: false,
+      message: error.error?.description || "Order creation failed",
+    });
   }
 };
+
 
 exports.verifyPayment = async (req, res) => {
   try {
@@ -105,22 +93,38 @@ exports.verifyPayment = async (req, res) => {
 
     const userId = req.userId;
 
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing payment verification data"
+      });
+    }
+
+    // Fetch active config
+    const config = await RazorpayConfig.findOne({ isActive: true }).select("+keySecret");
+    if (!config) {
+      return res.status(503).json({ 
+        success: false, 
+        message: "Razorpay not configured" 
+      });
+    }
+
     // Validate signature
     const sign = `${razorpay_order_id}|${razorpay_payment_id}`;
-
     const expectedSign = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)   // MUST MATCH .env
+      .createHmac("sha256", config.keySecret)
       .update(sign)
       .digest("hex");
 
     if (expectedSign !== razorpay_signature) {
+      console.error("❌ Signature verification failed");
       return res.status(400).json({
         success: false,
         message: "Invalid payment signature"
       });
     }
 
-    // Update payment
+    // Update payment record
     await Payment.findOneAndUpdate(
       { razorpayOrderId: razorpay_order_id },
       {
@@ -132,18 +136,23 @@ exports.verifyPayment = async (req, res) => {
     );
 
     const plan = await Plan.findById(planId);
-    if (!plan)
-      return res.status(404).json({ success: false, message: "Plan not found" });
+    if (!plan) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Plan not found" 
+      });
+    }
 
+    // Create or update subscription
     const now = new Date();
-    const end = new Date();
-    end.setMonth(end.getMonth() + 1);
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + 1);
 
     const planLimits = {
-         emailsPerMonth: plan.emailsPerMonth,
-    smsPerMonth: plan.smsPerMonth,
-    smtpConfigs: plan.smtpConfigs,
-    androidGateways: plan.androidGateways
+      emailsPerMonth: plan.emailsPerMonth,
+      smsPerMonth: plan.smsPerMonth,
+      smtpConfigs: plan.smtpConfigs,
+      androidGateways: plan.androidGateways
     };
 
     let subscription = await Subscription.findOne({ user: userId });
@@ -151,11 +160,11 @@ exports.verifyPayment = async (req, res) => {
     if (subscription) {
       subscription.plan = planId;
       subscription.startDate = now;
-      subscription.endDate = end;
+      subscription.endDate = endDate;
       subscription.isActive = true;
       subscription.subscriptionStatus = "active";
       subscription.autoRenew = true;
-
+      subscription.planLimits = planLimits;
       subscription.planUsage = {
         emailsSent: 0,
         smsSent: 0,
@@ -163,19 +172,17 @@ exports.verifyPayment = async (req, res) => {
         androidGatewaysUsed: 0,
         lastResetDate: now
       };
-
-      subscription.planLimits = planLimits;
       await subscription.save();
     } else {
       subscription = await Subscription.create({
         user: userId,
         plan: planId,
         startDate: now,
-        endDate: end,
+        endDate: endDate,
         isActive: true,
         subscriptionStatus: "active",
         autoRenew: true,
-        planLimits,
+        planLimits: planLimits,
         planUsage: {
           emailsSent: 0,
           smsSent: 0,
@@ -186,6 +193,7 @@ exports.verifyPayment = async (req, res) => {
       });
     }
 
+    // Update user
     await User.findByIdAndUpdate(userId, {
       subscription: subscription._id,
       currentPlan: planId
@@ -194,19 +202,20 @@ exports.verifyPayment = async (req, res) => {
     return res.json({
       success: true,
       message: "Payment verified & subscription activated",
-      subscription
+      data: {
+        subscriptionId: subscription._id,
+        plan: plan.name
+      }
     });
 
   } catch (err) {
-    console.error("Payment verification error:", err);
+    console.error("❌ Payment verification error:", err);
     return res.status(500).json({
       success: false,
       message: "Payment verification failed"
     });
   }
 };
-
-
 
 // Handle free subscription
 const handleFreeSubscription = async (userId, planId, res) => {
@@ -245,7 +254,7 @@ const handleFreeSubscription = async (userId, planId, res) => {
       }
     });
   } catch (error) {
-    console.error("Free subscription error:", error);
+    console.error("❌ Free subscription error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to activate free subscription"
@@ -257,32 +266,28 @@ const handleFreeSubscription = async (userId, planId, res) => {
 const createOrUpdateSubscription = async (userId, planId) => {
   const now = new Date();
   const periodEnd = new Date();
-  periodEnd.setMonth(periodEnd.getMonth() + 1); // 1 month subscription
+  periodEnd.setMonth(periodEnd.getMonth() + 1);
 
-  // Check if user already has a subscription
   let subscription = await Subscription.findOne({ user: userId });
 
   if (subscription) {
-    // Update existing subscription
     subscription.plan = planId;
-    subscription.currentPeriodStart = now;
-    subscription.currentPeriodEnd = periodEnd;
+    subscription.startDate = now;
+    subscription.endDate = periodEnd;
     subscription.status = 'active';
     subscription.cancelAtPeriodEnd = false;
   } else {
-    // Create new subscription
     subscription = new Subscription({
       user: userId,
       plan: planId,
-      currentPeriodStart: now,
-      currentPeriodEnd: periodEnd,
+      startDate: now,
+      endDate: periodEnd,
       status: 'active'
     });
   }
 
   await subscription.save();
 
-  // Update user's current plan and subscription reference
   await User.findByIdAndUpdate(userId, {
     currentPlan: planId,
     subscription: subscription._id,
@@ -296,7 +301,7 @@ const createOrUpdateSubscription = async (userId, planId) => {
 exports.getPaymentDetails = async (req, res) => {
   try {
     const { paymentId } = req.params;
-    
+
     if (!razorpay) {
       return res.status(503).json({
         success: false,
@@ -305,7 +310,7 @@ exports.getPaymentDetails = async (req, res) => {
     }
 
     const payment = await razorpay.payments.fetch(paymentId);
-    
+
     res.status(200).json({
       success: true,
       data: payment
@@ -323,7 +328,7 @@ exports.getPaymentDetails = async (req, res) => {
 exports.refundPayment = async (req, res) => {
   try {
     const { paymentId } = req.body;
-    
+
     if (!razorpay) {
       return res.status(503).json({
         success: false,
@@ -359,7 +364,7 @@ exports.refundPayment = async (req, res) => {
 exports.getSubscription = async (req, res) => {
   try {
     const userId = req.userId;
-    
+
     const subscription = await Subscription.findOne({ user: userId })
       .populate('plan')
       .populate('user', 'username email');
@@ -388,7 +393,7 @@ exports.getSubscription = async (req, res) => {
 exports.getPaymentHistory = async (req, res) => {
   try {
     const userId = req.userId;
-    
+
     const payments = await Payment.find({ user: userId })
       .populate('plan')
       .sort({ createdAt: -1 });

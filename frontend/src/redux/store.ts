@@ -7,15 +7,18 @@ import { campaignApi } from "./api/campaignApi";
 import { emailDirectoryApi } from "./api/emailDirectoryApi";
 import { smsCampaignApi } from "./api/sms_compaign.api";
 import { numberDirectoryApi } from "./api/numberDirectoryApi";
-import { paymentApi } from './api/paymentApi';
+import { paymentApi } from "./api/paymentApi";
 import { planApi } from "./api/planApi";
-import { dashboardApi } from "./api/dashboardApi"; // ✅ IMPORT DASHBOARD API
+import { dashboardApi } from "./api/dashboardApi";
+import { razorpayApi } from "./api/razorpayApi"; // ✅ NEW IMPORT
 
 import authReducer from "./slices/authSlice";
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
+
+    // API Reducers
     [apiSlice.reducerPath]: apiSlice.reducer,
     [authApi.reducerPath]: authApi.reducer,
     [smtpApi.reducerPath]: smtpApi.reducer,
@@ -26,7 +29,8 @@ export const store = configureStore({
     [smsCampaignApi.reducerPath]: smsCampaignApi.reducer,
     [paymentApi.reducerPath]: paymentApi.reducer,
     [planApi.reducerPath]: planApi.reducer,
-    [dashboardApi.reducerPath]: dashboardApi.reducer, // ✅ ADD DASHBOARD API
+    [dashboardApi.reducerPath]: dashboardApi.reducer,
+    [razorpayApi.reducerPath]: razorpayApi.reducer, // ✅ ADDED HERE
   },
 
   middleware: (getDefaultMiddleware) =>
@@ -41,5 +45,6 @@ export const store = configureStore({
       .concat(smsCampaignApi.middleware)
       .concat(paymentApi.middleware)
       .concat(planApi.middleware)
-      .concat(dashboardApi.middleware) // ✅ ADD DASHBOARD API
+      .concat(dashboardApi.middleware)
+      .concat(razorpayApi.middleware), // ✅ ADDED HERE
 });

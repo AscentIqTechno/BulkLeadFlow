@@ -11,6 +11,7 @@ import { paymentApi } from "./api/paymentApi";
 import { planApi } from "./api/planApi";
 import { dashboardApi } from "./api/dashboardApi";
 import { razorpayApi } from "./api/razorpayApi"; // ✅ NEW IMPORT
+import { profileApi } from"./api/profileApi"
 
 import authReducer from "./slices/authSlice";
 
@@ -31,6 +32,7 @@ export const store = configureStore({
     [planApi.reducerPath]: planApi.reducer,
     [dashboardApi.reducerPath]: dashboardApi.reducer,
     [razorpayApi.reducerPath]: razorpayApi.reducer, // ✅ ADDED HERE
+    [profileApi.reducerPath]:profileApi.reducer,
   },
 
   middleware: (getDefaultMiddleware) =>
@@ -46,5 +48,6 @@ export const store = configureStore({
       .concat(paymentApi.middleware)
       .concat(planApi.middleware)
       .concat(dashboardApi.middleware)
-      .concat(razorpayApi.middleware), // ✅ ADDED HERE
+      .concat(razorpayApi.middleware)
+      .concat(profileApi.middleware)
 });

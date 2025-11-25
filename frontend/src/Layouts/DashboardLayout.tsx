@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Sidebar from "@/components/Sidbar";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Menu, LogOut, User, ChevronDown, CheckCircle } from "lucide-react";
 import { authApi } from "@/redux/api/authApi";
 import { useSelector } from "react-redux";
@@ -46,6 +46,7 @@ const getPageTitle = (path: string) => {
   if (path.includes("/payment_billing")) return "Billing & Payments";
   if (path.includes("/plan_management")) return "Plan Management";
   if (path.includes("/razorpay_config")) return "Razorpay Configuration";
+  if (path.includes("/user_profile")) return "User Profile"
 
   // Dashboard overview
   if (path === "/dashboard" || path.includes("/overview"))
@@ -143,7 +144,7 @@ const getPageTitle = (path: string) => {
                     className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     <User size={16} className="text-gray-500" />
-                    <span>Profile</span>
+                    <Link to="user_profile"><span>Profile</span></Link>
                   </button>
 
                   {/* Divider */}

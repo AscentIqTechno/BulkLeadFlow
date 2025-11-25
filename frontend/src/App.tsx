@@ -25,6 +25,7 @@ import SmsNumberDirectoryPage from "./pages/SMS/SmsNumberDirectoryPage";
 import BillingPage from "./pages/Billing/billingPayment";
 import PlanManagement from "./pages/settings/PlanManagement";
 import RazorpayConfigManager from "./pages/settings/RazorpayConfigForm";
+import UserProfile from "./pages/UserProfile/UserProfile";
 
 const App = () => (
   <Provider store={store}>
@@ -63,6 +64,7 @@ const App = () => (
             <Route path="sms_config" element={<SmsGatewayConfigPage />} />
             <Route path="sms_campaigns" element={<SmsSendPage />} />
             <Route path="sms_directory" element={<SmsNumberDirectoryPage />} />
+            <Route path="user_profile" element ={<UserProfile />} />
           </Route>
 
           {/* 404 */}

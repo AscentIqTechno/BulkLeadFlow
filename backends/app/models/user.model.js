@@ -6,7 +6,13 @@ const User = mongoose.model(
     username: String,
     email: String,
     password: String,
-    phone:Number,
+    phone: String,
+    
+    // Add profile image field
+    profileImage: {
+      public_id: String,
+      url: String
+    },
 
     roles: [
       {
@@ -15,23 +21,19 @@ const User = mongoose.model(
       }
     ],
 
-    // Points to the user's active subscription
     subscription: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Subscription"
     },
 
-    // Points to selected plan (optional)
     currentPlan: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Plan",
       default: null
     },
 
-    // Razorpay Customer ID
     razorpayCustomerId: String,
 
-    // Billing address
     billingAddress: {
       street: String,
       city: String,
@@ -41,18 +43,13 @@ const User = mongoose.model(
       phone: String
     },
 
-    // Password reset
     resetPasswordOtp: String,
     resetPasswordOtpExpires: Date,
     resetPasswordToken: String,
     resetPasswordExpires: Date,
 
     lastLogin: Date,
-
-    // Account status
     isActive: { type: Boolean, default: true },
-
-    // Profile completion
     profileCompleted: { type: Boolean, default: false }
 
   }, { timestamps: true })

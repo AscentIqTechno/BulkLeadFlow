@@ -54,7 +54,7 @@ router.delete(
 // ---------------------------
 router.get(
   "/config-active",
-  [authJwt.verifyToken, authJwt.isAdmin],
+  [authJwt.verifyToken],
   controller.getActiveConfig
 );
 

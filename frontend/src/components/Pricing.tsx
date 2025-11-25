@@ -1,72 +1,42 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Check } from 'lucide-react';
-
-interface PricingPlan {
-  name: string;
-  price: { monthly: string; annual: string };
-  description: string;
-  features: string[];
-  highlighted?: boolean;
-  buttonText: string;
-}
-
-const pricingPlans: PricingPlan[] = [
-  {
-    name: 'Starter',
-    price: { monthly: '$0', annual: '$0' },
-    description: 'Perfect for testing and small-scale campaigns.',
-    features: [
-      'Up to 500 emails/month',
-      'Up to 100 SMS/month',
-      '1 SMTP configuration',
-      '1 Android gateway connection',
-      'Basic analytics',
-      'Community support',
-    ],
-    buttonText: 'Start Free',
-  },
-  {
-    name: 'Professional',
-    price: { monthly: '$29', annual: '$290' },
-    description: 'Ideal for growing businesses and marketing teams.',
-    features: [
-      'Up to 10,000 emails/month',
-      'Up to 2,000 SMS/month',
-      '5 SMTP configurations',
-      '3 Android gateway connections',
-      'Advanced analytics',
-      'Priority email support',
-      'Custom templates',
-    ],
-    buttonText: 'Get Started',
-  },
-  {
-    name: 'Enterprise',
-    price: { monthly: '$99', annual: '$990' },
-    description: 'For agencies and high-volume senders.',
-    features: [
-      'Unlimited emails',
-      'Unlimited SMS',
-      'Unlimited SMTP configurations',
-      'Unlimited gateway connections',
-      'Real-time analytics',
-      '24/7 phone support',
-      'Custom integrations',
-      'Dedicated account manager',
-    ],
-    highlighted: true,
-    buttonText: 'Go Enterprise',
-  },
-];
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Check } from "lucide-react";
+import { useGetPlansQuery } from "@/redux/api/planApi";
 
 const Pricing = () => {
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
+
+  // Fetch dynamic plans
+  const { data: planResponse, isLoading } = useGetPlansQuery(null);
+  const [pricingPlans, setPricingPlans] = useState<any[]>([]);
+
+  // Transform backend → UI
+  useEffect(() => {
+    if (planResponse?.success && Array.isArray(planResponse.data)) {
+      const transformed = planResponse.data.map((p: any) => ({
+        name: p.name,
+        price: {
+          monthly: p.interval === "month" ? `₹${p.price / 100}` : "₹0",
+          annual: p.interval === "year" ? `₹${p.price / 100}` : "₹0",
+        },
+        description: p.description,
+        features: p.features || [],
+        highlighted: p.isPopular || false,
+        buttonText: p.price === 0 ? "Start Free" : "Get Started",
+      }));
+
+      setPricingPlans(transformed);
+    }
+  }, [planResponse]);
+
+  if (isLoading) {
+    return <div className="text-center text-white py-20">Loading…</div>;
+  }
 
   return (
     <section id="pricing" className="py-24 bg-gray-900">
       <div className="container mx-auto px-4">
-        {/* Section Header */}
+        {/* Header */}
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-yellow-300">
@@ -77,24 +47,29 @@ const Pricing = () => {
             No hidden fees. Use your own email and mobile accounts. Scale as you grow.
           </p>
 
-          {/* Toggle Button */}
+          {/* Toggle */}
           <div className="inline-flex p-1 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full">
             <button
               className={`px-4 py-2 rounded-full transition-colors ${
-                billingCycle === 'monthly' ? 'bg-yellow-500 text-gray-900 font-semibold' : 'text-gray-400'
+                billingCycle === "monthly"
+                  ? "bg-yellow-500 text-gray-900 font-semibold"
+                  : "text-gray-400"
               }`}
-              onClick={() => setBillingCycle('monthly')}
+              onClick={() => setBillingCycle("monthly")}
             >
               Monthly
             </button>
-            <button
+
+            {/* <button
               className={`px-4 py-2 rounded-full transition-colors ${
-                billingCycle === 'annual' ? 'bg-yellow-500 text-gray-900 font-semibold' : 'text-gray-400'
+                billingCycle === "annual"
+                  ? "bg-yellow-500 text-gray-900 font-semibold"
+                  : "text-gray-400"
               }`}
-              onClick={() => setBillingCycle('annual')}
+              onClick={() => setBillingCycle("annual")}
             >
               Annual <span className="text-xs font-medium ml-1">Save 17%</span>
-            </button>
+            </button> */}
           </div>
         </div>
 
@@ -105,8 +80,8 @@ const Pricing = () => {
               key={index}
               className={`bg-white/5 backdrop-blur-sm border rounded-xl overflow-hidden ${
                 plan.highlighted
-                  ? 'border-yellow-500 relative shadow-xl shadow-yellow-500/10'
-                  : 'border-white/10'
+                  ? "border-yellow-500 relative shadow-xl shadow-yellow-500/10"
+                  : "border-white/10"
               }`}
             >
               {plan.highlighted && (
@@ -117,23 +92,31 @@ const Pricing = () => {
 
               <div className="p-8">
                 <h3 className="text-xl font-semibold mb-2 text-white">{plan.name}</h3>
+
                 <div className="mb-4">
                   <span className="text-3xl md:text-4xl font-bold text-white">
-                    {billingCycle === 'monthly' ? plan.price.monthly : plan.price.annual}
+                    {billingCycle === "monthly"
+                      ? plan.price.monthly
+                      : plan.price.annual}
                   </span>
                   <span className="text-gray-400 ml-1">
-                    {plan.price.monthly !== '$0' ? (billingCycle === 'monthly' ? '/month' : '/year') : ''}
+                    {plan.price.monthly !== "₹0"
+                      ? billingCycle === "monthly"
+                        ? "/month"
+                        : "/year"
+                      : ""}
                   </span>
                 </div>
+
                 <p className="text-gray-400 mb-6">{plan.description}</p>
 
                 <Button
                   className={`w-full mb-6 ${
                     plan.highlighted
-                      ? 'bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold'
-                      : plan.name === 'Starter'
-                      ? 'bg-white/10 hover:bg-white/20 text-white'
-                      : 'bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold'
+                      ? "bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold"
+                      : plan.name === "Starter"
+                      ? "bg-white/10 hover:bg-white/20 text-white"
+                      : "bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold"
                   }`}
                 >
                   {plan.buttonText}
@@ -142,7 +125,7 @@ const Pricing = () => {
                 <div>
                   <p className="text-sm font-medium text-gray-300 mb-4">What's included:</p>
                   <ul className="space-y-3">
-                    {plan.features.map((feature, i) => (
+                    {plan.features.map((feature: string, i: number) => (
                       <li key={i} className="flex items-start">
                         <Check className="h-5 w-5 text-yellow-500 mr-3 shrink-0" />
                         <span className="text-gray-400 text-sm">{feature}</span>
@@ -150,6 +133,7 @@ const Pricing = () => {
                     ))}
                   </ul>
                 </div>
+
               </div>
             </div>
           ))}
@@ -158,7 +142,8 @@ const Pricing = () => {
         {/* Additional Info */}
         <div className="text-center mt-12">
           <p className="text-gray-400 text-sm">
-            All plans include: Personal account usage • No sending limits (only on Starter) • Real-time analytics • Secure data handling
+            All plans include: Personal account usage • No sending limits (only on Starter)
+            • Real-time analytics • Secure data handling
           </p>
         </div>
       </div>

@@ -12,28 +12,19 @@ import {
   X,
   MessageSquare,
   Users,
-  BarChart3,
   Smartphone,
   CreditCard,
-  Database,
-  Cpu,
   FileText,
   Wallet
 } from "lucide-react";
 import clsx from "clsx";
 import { useSelector } from "react-redux";
 
-interface SidebarProps {
-  isOpen: boolean;
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
+const Sidebar = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
   const roles = useSelector((state: any) => state.auth?.user.roles || []);
   const isAdmin = Array.isArray(roles) && roles.includes("admin");
 
-  // Collapsible States
   const [openEmail, setOpenEmail] = useState(true);
   const [openSms, setOpenSms] = useState(false);
   const [openSettings, setOpenSettings] = useState(false);
@@ -68,6 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
         </div>
 
         <nav className="mt-4 px-2 space-y-1">
+
           {/* Dashboard */}
           <Link
             to="/dashboard/overview"
@@ -83,20 +75,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
             <span>Dashboard Overview</span>
           </Link>
 
-          {/* Delivery Analytics - Replaced Campaign Analytics */}
-          <Link
-            to="/dashboard/analytics"
-            className={clsx(
-              "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
-              location.pathname.includes("/analytics")
-                ? "bg-yellow-500 text-gray-900 font-semibold shadow-md"
-                : "text-gray-300 hover:bg-gray-800 hover:text-white"
-            )}
-            onClick={() => setIsOpen(false)}
-          >
-            <BarChart3 size={18} />
-            <span>Delivery Analytics</span>
-          </Link>
+          {/* ❌ REMOVED DELIVERY ANALYTICS */}
 
           {/* Billing & Payments */}
           <Link
@@ -113,7 +92,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
             <span>Billing & Payments</span>
           </Link>
 
-          {/* ADMIN ONLY */}
+          {/* ADMIN ONLY – USER MANAGEMENT */}
           {isAdmin && (
             <Link
               to="/dashboard/users"
@@ -129,7 +108,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
             </Link>
           )}
 
-          {/* Email Collapsible Section */}
+          {/* Email Section (Everyone) */}
           <div className="mt-3">
             <button
               className="flex items-center justify-between w-full px-4 py-3 text-left rounded-lg transition-all duration-200 hover:bg-gray-800 group"
@@ -188,7 +167,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
             )}
           </div>
 
-          {/* SMS Collapsible Section */}
+          {/* SMS Section */}
           <div className="mt-3">
             <button
               className="flex items-center justify-between w-full px-4 py-3 text-left rounded-lg transition-all duration-200 hover:bg-gray-800 group"
@@ -247,59 +226,59 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
             )}
           </div>
 
-         
-          {/* Settings Collapsible Section */}
-          <div className="mt-3">
-            <button
-              className="flex items-center justify-between w-full px-4 py-3 text-left rounded-lg transition-all duration-200 hover:bg-gray-800 group"
-              onClick={() => setOpenSettings(!openSettings)}
-            >
-              <span className="flex items-center gap-3 text-gray-300 group-hover:text-white font-medium">
-                <Settings size={18} /> Settings
-              </span>
-              {openSettings ? 
-                <ChevronDown size={16} className="text-gray-400 group-hover:text-white" /> : 
-                <ChevronRight size={16} className="text-gray-400 group-hover:text-white" />
-              }
-            </button>
+          {/* SETTINGS — ADMIN ONLY */}
+          {isAdmin && (
+            <div className="mt-3">
+              <button
+                className="flex items-center justify-between w-full px-4 py-3 text-left rounded-lg transition-all duration-200 hover:bg-gray-800 group"
+                onClick={() => setOpenSettings(!openSettings)}
+              >
+                <span className="flex items-center gap-3 text-gray-300 group-hover:text-white font-medium">
+                  <Settings size={18} /> Settings
+                </span>
+                {openSettings ? 
+                  <ChevronDown size={16} className="text-gray-400 group-hover:text-white" /> : 
+                  <ChevronRight size={16} className="text-gray-400 group-hover:text-white" />
+                }
+              </button>
 
-            {openSettings && (
-              <div className="ml-6 mt-2 space-y-1 border-l-2 border-gray-700 pl-3">
-                {/* Plan Management */}
-             <Link
-  to="/dashboard/settings/plan_management"
-  className={clsx(
-    "flex items-center gap-2 text-sm px-3 py-2 rounded-md transition-all duration-200",
-    location.pathname.includes("/plan_management")
-      ? "bg-yellow-500 text-gray-900 font-medium shadow-sm"
-      : "text-gray-400 hover:bg-gray-800 hover:text-white"
-  )}
-  onClick={() => setIsOpen(false)}
->
-  <FileText size={14} />
-  Plan Management
-</Link>
+              {openSettings && (
+                <div className="ml-6 mt-2 space-y-1 border-l-2 border-gray-700 pl-3">
+                  <Link
+                    to="/dashboard/settings/plan_management"
+                    className={clsx(
+                      "flex items-center gap-2 text-sm px-3 py-2 rounded-md transition-all duration-200",
+                      location.pathname.includes("/plan_management")
+                        ? "bg-yellow-500 text-gray-900 font-medium shadow-sm"
+                        : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                    )}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <FileText size={14} />
+                    Plan Management
+                  </Link>
 
-<Link
-  to="/dashboard/settings/razorpay_config"
-  className={clsx(
-    "flex items-center gap-2 text-sm px-3 py-2 rounded-md transition-all duration-200",
-    location.pathname.includes("/razorpay_config")
-      ? "bg-yellow-500 text-gray-900 font-medium shadow-sm"
-      : "text-gray-400 hover:bg-gray-800 hover:text-white"
-  )}
-  onClick={() => setIsOpen(false)}
->
-  <Wallet size={14} />
-  Razorpay Configuration
-</Link>
+                  <Link
+                    to="/dashboard/settings/razorpay_config"
+                    className={clsx(
+                      "flex items-center gap-2 text-sm px-3 py-2 rounded-md transition-all duration-200",
+                      location.pathname.includes("/razorpay_config")
+                        ? "bg-yellow-500 text-gray-900 font-medium shadow-sm"
+                        : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                    )}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Wallet size={14} />
+                    Razorpay Configuration
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
 
-              </div>
-            )}
-          </div>
         </nav>
 
-        {/* Footer Info */}
+        {/* Footer */}
         <div className="absolute bottom-4 left-4 right-4 p-3 bg-gray-800/50 rounded-lg border border-gray-700">
           <p className="text-xs text-gray-400 text-center">
             Personal SMTP & Android Gateway

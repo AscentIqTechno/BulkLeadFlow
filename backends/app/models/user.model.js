@@ -7,8 +7,7 @@ const User = mongoose.model(
     email: String,
     password: String,
     phone: String,
-    
-    // Add profile image field
+
     profileImage: {
       public_id: String,
       url: String
@@ -43,13 +42,15 @@ const User = mongoose.model(
       phone: String
     },
 
+    // 🔥 NEW FIELDS FOR SIGNUP OTP
+    signupOtp: String,
+    signupOtpExpires: Date,
+
     resetPasswordOtp: String,
     resetPasswordOtpExpires: Date,
-    resetPasswordToken: String,
-    resetPasswordExpires: Date,
 
     lastLogin: Date,
-    isActive: { type: Boolean, default: true },
+    isActive: { type: Boolean, default: false },   // 🔥 Default false (must verify OTP)
     profileCompleted: { type: Boolean, default: false }
 
   }, { timestamps: true })

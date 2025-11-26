@@ -2,17 +2,35 @@ const express = require("express");
 const router = express.Router();
 
 const { verifySignUp } = require("../middlewares");
-const { signup, signin, forgotPassword, verifyOtp, resetPassword, resendOtp, changePassword } = require("../controllers/auth.controller");
 
-// SIGNUP
+const { 
+  sendSignupOtp, 
+  signin, 
+  forgotPassword, 
+  verifyOtp, 
+  resetPassword, 
+  resendOtp, 
+  changePassword,
+  
+  // 👇 NEW CONTROLLERS ADDED
+  verifySignupAndSave,
+  resendSignupOtp
+
+} = require("../controllers/auth.controller");
+
+
+// SIGNUP (User will receive OTP email)
 router.post(
   "/signup",
-  [
-    verifySignUp.checkDuplicateUsernameOrEmail,
-    verifySignUp.checkRolesExisted,
-  ],
-  signup
+  sendSignupOtp
 );
+
+// SIGNUP OTP VERIFY (NEW)
+router.post("/verify-signup-otp", verifySignupAndSave);
+
+// RESEND SIGNUP OTP (NEW)
+// router.post("/resend-signup-otp", resendSignupOtp);
+
 
 // SIGNIN
 router.post("/signin", signin);
@@ -27,13 +45,18 @@ router.post("/logout", (req, res) => {
   }
 });
 
+
 // PASSWORD RESET ROUTES
 router.post("/forgot-password", forgotPassword);
 router.post("/verify-otp", verifyOtp);
 router.post("/reset-password", resetPassword);
 router.post("/resend-otp", resendOtp);
+// RESEND SIGNUP OTP (NEW)
+router.post("/resend-signup-otp", resendSignupOtp);
 
-// CHANGE PASSWORD (Protected - requires authentication)
-// router.post("/change-password", authJwt.verifyToken, changePassword);
+
+// CHANGE PASSWORD (Optional Protected Route)
+// router.post("/change-password", changePassword);
+
 
 module.exports = router;

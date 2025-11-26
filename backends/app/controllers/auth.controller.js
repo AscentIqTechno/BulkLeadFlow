@@ -13,75 +13,158 @@ const generateOtp = () => {
 };
 
 // SIGNUP
-// SIGNUP
-exports.signup = async (req, res) => {
+// SIGNUP WITH EMAIL OTP VERIFICATION
+// STEP 1: SEND SIGNUP OTP
+exports.sendSignupOtp = async (req, res) => {
   try {
-    const { username, email, password, phone, roles } = req.body;
+    const { email } = req.body;
+    if (!email) return res.status(400).send({ success: false, message: "Email is required" });
 
-    // Validate required fields
-    if (!username || !email || !password) {
-      return res.status(400).send({ 
-        success: false,
-        message: "Username, email and password are required!" 
-      });
-    }
-
-    // Optional: Validate phone
-    // if (!phone) {
-    //   return res.status(400).send({
-    //     success: false,
-    //     message: "Phone number is required"
-    //   });
-    // }
-
-    // Check if user already exists (email / username / phone)
-    const existingUser = await User.findOne({ 
-      $or: [{ email }, { username }, { phone }] 
-    });
-    
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).send({
-        success: false,
-        message: "User with this email, username or phone already exists!"
-      });
+      return res.status(400).send({ success: false, message: "User already exists" });
     }
+
+    const otp = generateOtp();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+
+    // Save OTP in Otp collection
+    await Otp.create({
+      email,
+      otp,
+      type: "signup",
+      expiresAt,
+      used: false
+    });
+
+    await sendOtpEmail(email, otp, email); // Can customize name later
+
+    res.status(200).send({ success: true, message: "OTP sent successfully" });
+  } catch (err) {
+    console.error("Send signup OTP error:", err);
+    res.status(500).send({ success: false, message: "Internal server error" });
+  }
+};
+
+// STEP 2: VERIFY OTP & SAVE USER DETAILS
+exports.verifySignupAndSave = async (req, res) => {
+  try {
+    const { email, otp, username, password, phone, roles } = req.body;
+
+    if (!email || !otp || !username || !password) {
+      return res.status(400).send({ success: false, message: "All fields are required" });
+    }
+
+    // Check OTP
+    const otpRecord = await Otp.findOne({
+      email,
+      otp,
+      type: "signup",
+      used: false,
+      expiresAt: { $gt: new Date() }
+    });
+
+    if (!otpRecord) {
+      return res.status(400).send({ success: false, message: "Invalid or expired OTP" });
+    }
+
+    // Mark OTP as used
+    otpRecord.used = true;
+    await otpRecord.save();
+
+    // Check again if user exists (race condition)
+    const existingUser = await User.findOne({ email });
+    if (existingUser) return res.status(400).send({ success: false, message: "User already exists" });
 
     // Create user
+    const hashedPassword = bcrypt.hashSync(password, 8);
     const user = new User({
       username,
       email,
-      phone,                    // <<<<<< ADDED HERE
-      password: bcrypt.hashSync(password, 8),
+      phone,
+      password: hashedPassword,
+      isActive: true
     });
-
-    const savedUser = await user.save();
 
     // Assign roles
     if (roles && roles.length > 0) {
       const foundRoles = await Role.find({ name: { $in: roles } });
-      savedUser.roles = foundRoles.map((r) => r._id);
+      user.roles = foundRoles.map((r) => r._id);
     } else {
       const defaultRole = await Role.findOne({ name: "user" });
-      savedUser.roles = [defaultRole._id];
+      user.roles = [defaultRole._id];
     }
 
-    await savedUser.save();
+    await user.save();
 
     res.status(201).send({
       success: true,
       message: "User registered successfully!",
-      userId: savedUser._id,
+      userId: user._id,
+      email: user.email
     });
 
   } catch (err) {
-    console.error("Signup error:", err);
-    res.status(500).send({ 
-      success: false,
-      message: err.message || "Signup failed" 
-    });
+    console.error("Verify signup and save error:", err);
+    res.status(500).send({ success: false, message: "Internal server error" });
   }
 };
 
+
+// RESEND SIGNUP OTP FOR SIGNUP FLOW
+exports.resendSignupOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    console.log("🔄 Resending signup OTP for:", email);
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+    }
+
+    // Check if user already exists (only allow OTP for new users)
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists",
+      });
+    }
+
+    // Generate new OTP
+    const otp = generateOtp();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+
+    // Save OTP in DB
+    await Otp.create({
+      email,
+      otp,
+      type: "signup",
+      expiresAt,
+      used: false,
+    });
+
+    await sendOtpEmail(email, otp, email);
+
+    console.log("✅ Signup OTP resent:", otp);
+
+    res.status(200).json({
+      success: true,
+      message: "Signup OTP resent successfully!",
+    });
+
+  } catch (err) {
+    console.error("🔥 Resend signup OTP error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
 
 // SIGNIN
 exports.signin = async (req, res) => {
@@ -141,6 +224,7 @@ exports.signin = async (req, res) => {
       email: user.email,
       phone:user.phone,
       roles: authorities,
+      photo:user.photo,
       accessToken: token,
     });
 

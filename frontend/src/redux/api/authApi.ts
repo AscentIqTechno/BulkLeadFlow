@@ -16,6 +16,7 @@ export const authApi = createApi({
 
   endpoints: (builder) => ({
 
+    // SIGNUP (User receives OTP email)
     registerUser: builder.mutation({
       query: (userData) => ({
         url: "/auth/signup",
@@ -25,6 +26,27 @@ export const authApi = createApi({
       invalidatesTags: ["User"],
     }),
 
+    // ✅ NEW: Verify Signup OTP
+    verifySignupOtp: builder.mutation({
+      query: ({ email, otp, username, password, phone }) => ({
+        url: "/auth/verify-signup-otp",
+        method: "POST",
+        body: { email, otp, username, password, phone },
+      }),
+    }),
+
+
+    // ✅ NEW: Resend Signup OTP
+  resendSignupOtp: builder.mutation({
+  query: (email) => ({
+    url: "/auth/resend-signup-otp",
+    method: "POST",
+    body: { email },   // email MUST be a string
+  }),
+}),
+
+
+    // LOGIN
     loginUser: builder.mutation({
       query: (credentials) => ({
         url: "/auth/signin",
@@ -33,6 +55,7 @@ export const authApi = createApi({
       }),
     }),
 
+    // LOGOUT
     logoutUser: builder.mutation({
       query: () => ({
         url: "/auth/logout",
@@ -40,7 +63,7 @@ export const authApi = createApi({
       }),
     }),
 
-    // Password reset endpoints
+    // PASSWORD RESET
     forgotPassword: builder.mutation({
       query: (email) => ({
         url: "/auth/forgot-password",
@@ -73,6 +96,7 @@ export const authApi = createApi({
       }),
     }),
 
+    // USER MANAGEMENT
     changePassword: builder.mutation({
       query: ({ currentPassword, newPassword, confirmPassword }) => ({
         url: "/auth/change-password",
@@ -108,6 +132,8 @@ export const authApi = createApi({
 
 export const {
   useRegisterUserMutation,
+  useVerifySignupOtpMutation,    // 👈 NEW
+  useResendSignupOtpMutation,    // 👈 NEW
   useLoginUserMutation,
   useLogoutUserMutation,
   useForgotPasswordMutation,

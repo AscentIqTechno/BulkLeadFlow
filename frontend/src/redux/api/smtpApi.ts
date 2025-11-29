@@ -38,6 +38,13 @@ export const smtpApi = createApi({
       }),
       invalidatesTags: ["SMTP"],
     }),
+    testSmtpConnection: builder.mutation({
+      query: (data) => ({
+        url: "/smtp/test",
+        method: "POST",
+        body: data,
+      }),
+    }),
 
     deleteSmtp: builder.mutation({
       query: (id) => ({
@@ -54,4 +61,5 @@ export const {
   useGetMySmtpsQuery,   // <-- your missing name (fixed)
   useUpdateSmtpMutation,
   useDeleteSmtpMutation,
+  useTestSmtpConnectionMutation,
 } = smtpApi;

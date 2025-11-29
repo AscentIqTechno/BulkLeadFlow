@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import {
   useAddSmtpMutation,
+  useTestSmtpConnectionMutation,
   useUpdateSmtpMutation,
 } from "@/redux/api/smtpApi";
 import { Server, Lock, User, Mail, Hash, Shield } from "lucide-react";
@@ -24,6 +25,7 @@ const schema = yup.object().shape({
 const SmtpForm = ({ editData, onSuccess }) => {
   const [addSmtp] = useAddSmtpMutation();
   const [updateSmtp] = useUpdateSmtpMutation();
+  const [testSmtpConnection, { isLoading: testing }] = useTestSmtpConnectionMutation();
 
   const {
     register,
@@ -61,9 +63,9 @@ const SmtpForm = ({ editData, onSuccess }) => {
   const onSubmit = async (formData) => {
     try {
       if (editData) {
-        console.log(formData,"formData")
+        console.log(formData, "formData")
         // ---- UPDATE ----
-      await updateSmtp({ id: editData._id, data: formData }).unwrap();
+        await updateSmtp({ id: editData._id, data: formData }).unwrap();
 
         toast.success("SMTP configuration updated successfully");
       } else {
@@ -185,10 +187,10 @@ const SmtpForm = ({ editData, onSuccess }) => {
           <span className="text-gray-300 font-medium">Secure Connection</span>
         </div>
         <label className="relative inline-flex items-center cursor-pointer">
-          <input 
-            type="checkbox" 
-            {...register("secure")} 
-            className="sr-only peer" 
+          <input
+            type="checkbox"
+            {...register("secure")}
+            className="sr-only peer"
           />
           <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500"></div>
         </label>
@@ -215,6 +217,23 @@ const SmtpForm = ({ editData, onSuccess }) => {
 
       {/* Submit Buttons */}
       <div className="flex gap-3 pt-4">
+        <button
+          type="button"
+          onClick={async () => {
+            const data = watch();
+            try {
+              const res = await testSmtpConnection(data).unwrap();
+              toast.success(res.message || "SMTP Works!");
+            } catch (err) {
+              toast.error(err?.data?.message || "Test failed");
+            }
+          }}
+          className="flex-1 px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg"
+        >
+          {testing ? "Testing..." : "Test"}
+        </button>
+      
+
         {editData && (
           <button
             type="button"
@@ -230,9 +249,8 @@ const SmtpForm = ({ editData, onSuccess }) => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`flex-1 px-4 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 ${
-            isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
+          className={`flex-1 px-4 py-3 bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
         >
           {isSubmitting ? (
             <>

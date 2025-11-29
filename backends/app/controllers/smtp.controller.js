@@ -1,5 +1,6 @@
 const db = require("../models");
 const SmtpConfig = db.smtp;
+const nodemailer = require("nodemailer");
 
 // ➤ CREATE SMTP
 exports.createSmtp = async (req, res) => {
@@ -50,6 +51,67 @@ exports.createSmtp = async (req, res) => {
   } catch (err) {
     console.error("SMTP CREATE ERROR:", err);
     res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+
+
+exports.testSmtpConnection = async (req, res) => {
+  try {
+    const { host, port, username, password, secure, fromEmail } = req.body;
+
+    // Validation
+    if (!host || !port || !username || !password || !fromEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "All SMTP fields are required.",
+      });
+    }
+
+    // Create transporter
+    const transporter = nodemailer.createTransport({
+      host,
+      port: Number(port),
+      secure: secure === true || secure === "true", // SSL if 465
+      auth: {
+        user: username,
+        pass: password,
+      },
+      tls: {
+        rejectUnauthorized: false, // avoids self-signed errors
+      }
+    });
+
+    console.log("Testing SMTP connection...");
+
+    // Verify connection
+    transporter.verify((error, success) => {
+      if (error) {
+        console.error("SMTP Test Error:", error.message);
+        return res.status(400).json({
+          success: false,
+          message: "SMTP connection failed.",
+          error: error.message,
+          suggestions: [
+            "Check host and port.",
+            "Check username or app-password.",
+            "Check secure mode (SSL/TLS).",
+            "Gmail requires App Password for SMTP."
+          ]
+        });
+      } else {
+        return res.json({
+          success: true,
+          message: "SMTP connection successful!",
+        });
+      }
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 };
 

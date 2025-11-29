@@ -16,5 +16,6 @@ router.put("/smtp/:id", verifyToken, controller.updateSmtp);
 
 // DELETE SMTP → no plan usage decrement
 router.delete("/smtp/:id", verifyToken, controller.deleteSmtp);
+router.post("/smtp/test", controller.testSmtpConnection)
 
 module.exports = router;

@@ -16,7 +16,7 @@ export const authApi = createApi({
 
   endpoints: (builder) => ({
 
-    // SIGNUP (User receives OTP email)
+    // SIGNUP
     registerUser: builder.mutation({
       query: (userData) => ({
         url: "/auth/signup",
@@ -26,7 +26,6 @@ export const authApi = createApi({
       invalidatesTags: ["User"],
     }),
 
-    // ✅ NEW: Verify Signup OTP
     verifySignupOtp: builder.mutation({
       query: ({ email, otp, username, password, phone }) => ({
         url: "/auth/verify-signup-otp",
@@ -35,16 +34,13 @@ export const authApi = createApi({
       }),
     }),
 
-
-    // ✅ NEW: Resend Signup OTP
-  resendSignupOtp: builder.mutation({
-  query: (email) => ({
-    url: "/auth/resend-signup-otp",
-    method: "POST",
-    body: { email },   // email MUST be a string
-  }),
-}),
-
+    resendSignupOtp: builder.mutation({
+      query: (email) => ({
+        url: "/auth/resend-signup-otp",
+        method: "POST",
+        body: { email },
+      }),
+    }),
 
     // LOGIN
     loginUser: builder.mutation({
@@ -55,7 +51,6 @@ export const authApi = createApi({
       }),
     }),
 
-    // LOGOUT
     logoutUser: builder.mutation({
       query: () => ({
         url: "/auth/logout",
@@ -105,11 +100,13 @@ export const authApi = createApi({
       }),
     }),
 
+    // 🟢 GET ALL USERS (ADMIN)
     fetchUsers: builder.query({
       query: () => "/user/all",
       providesTags: ["User"],
     }),
 
+    // 🟡 UPDATE USER
     updateUser: builder.mutation({
       query: ({ id, data }) => ({
         url: `/user/${id}`,
@@ -119,10 +116,21 @@ export const authApi = createApi({
       invalidatesTags: ["User"],
     }),
 
+    // 🔴 DELETE USER
     deleteUser: builder.mutation({
       query: (id) => ({
         url: `/user/${id}`,
         method: "DELETE",
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    // ⭐ NEW → CREATE ADMIN USER
+    createAdmin: builder.mutation({
+      query: (data) => ({
+        url: "/user/create-admin",
+        method: "POST",
+        body: data,
       }),
       invalidatesTags: ["User"],
     }),
@@ -132,8 +140,8 @@ export const authApi = createApi({
 
 export const {
   useRegisterUserMutation,
-  useVerifySignupOtpMutation,    // 👈 NEW
-  useResendSignupOtpMutation,    // 👈 NEW
+  useVerifySignupOtpMutation,
+  useResendSignupOtpMutation,
   useLoginUserMutation,
   useLogoutUserMutation,
   useForgotPasswordMutation,
@@ -143,5 +151,6 @@ export const {
   useChangePasswordMutation,
   useFetchUsersQuery,
   useUpdateUserMutation,
-  useDeleteUserMutation
+  useDeleteUserMutation,
+  useCreateAdminMutation,   // 👈 NEW EXPORT
 } = authApi;

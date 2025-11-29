@@ -132,44 +132,94 @@ exports.deleteEmail = async (req, res) => {
 // ==========================================
 exports.bulkImportEmail = async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ message: "CSV file missing" });
+    if (!req.file) {
+      return res.status(400).json({ message: "CSV file missing" });
+    }
 
     const jsonArray = await csv().fromFile(req.file.path);
 
-    if (!jsonArray.length) return res.status(400).json({ message: "CSV file is empty" });
+    if (!jsonArray.length) {
+      return res.status(400).json({ message: "CSV file is empty" });
+    }
 
-    // Normalize CSV fields
+    // -------------------------------
+    // ✅ CHECK REQUIRED CSV COLUMNS
+    // -------------------------------
+    const sample = jsonArray[0];
+
+    const emailColumn =
+      sample.email ||
+      sample.Email ||
+      sample.EmailAddress;
+
+    if (!emailColumn) {
+      return res.status(400).json({
+        message:
+          "Invalid CSV format. Required 'email' column missing. Allowed: email, Email, EmailAddress",
+      });
+    }
+
+    // -------------------------------
+    // Normalize
+    // -------------------------------
     const normalizedArray = jsonArray.map((item) => ({
       userId: req.userId,
-      email: item.email || item.Email || item.EmailAddress,
+      email: item.email || item.Email || item.EmailAddress || null,
       name: item.name || item.Name || "",
-      isConfidential: item.isConfidential === 'true' || item.isConfidential === true || false,
+      isConfidential:
+        item.isConfidential === "true" ||
+        item.isConfidential === true ||
+        false,
     }));
 
-    // Filter out entries with missing email
+    // Remove rows without email
     const validEntries = normalizedArray.filter((item) => item.email);
 
-    // Get existing emails for this user
+    if (!validEntries.length) {
+      return res.status(400).json({
+        message:
+          "Incorrect CSV format. No valid email entries found. Check your CSV.",
+      });
+    }
+
+    // -------------------------------
+    // Find duplicates
+    // -------------------------------
     const existingEmails = await EmailDirectory.find(
-      { userId: req.userId, email: { $in: validEntries.map((i) => i.email) } },
+      {
+        userId: req.userId,
+        email: { $in: validEntries.map((i) => i.email) },
+      },
       { email: 1, _id: 0 }
     ).lean();
 
     const existingSet = new Set(existingEmails.map((i) => i.email));
 
-    // Only insert new emails
-    const newEntries = validEntries.filter((item) => !existingSet.has(item.email));
+    // Only keep new
+    const newEntries = validEntries.filter(
+      (item) => !existingSet.has(item.email)
+    );
 
-    if (!newEntries.length)
-      return res.status(200).json({ message: "No new emails to import" });
+    if (!newEntries.length) {
+      return res.status(200).json({
+        message: "No new emails to import",
+      });
+    }
 
     const result = await EmailDirectory.insertMany(newEntries);
 
+    // -------------------------------
+    // SUCCESS ✔️
+    // -------------------------------
     res.status(200).json({
-      message: "Emails imported",
+      message: "Email import successful",
       count: result.length,
     });
+
   } catch (err) {
-    res.status(500).json({ message: "Failed to import emails", error: err.message });
+    res.status(500).json({
+      message: "Failed to import emails",
+      error: err.message,
+    });
   }
 };

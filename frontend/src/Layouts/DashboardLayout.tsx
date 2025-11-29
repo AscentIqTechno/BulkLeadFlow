@@ -28,32 +28,32 @@ const DashboardLayout = () => {
     }
   };
 
-// Convert URL to a readable page title dynamically
-const getPageTitle = (path: string) => {
-  // SMS pages
-  if (path.includes("/sms_directory")) return "SMS Number Directory";
-  if (path.includes("/sms_config")) return "SMS Gateway Configuration";
-  if (path.includes("/sms_campaigns")) return "SMS Campaigns";
+  // Convert URL to a readable page title dynamically
+  const getPageTitle = (path: string) => {
+    // SMS pages
+    if (path.includes("/sms_directory")) return "SMS Number Directory";
+    if (path.includes("/sms_config")) return "SMS Gateway Configuration";
+    if (path.includes("/sms_campaigns")) return "SMS Campaigns";
 
-  // Email pages
-  if (path.includes("/smtp")) return "SMTP Configuration";
-  if (path.includes("/users")) return "Manage Users";
-  if (path.includes("/campaigns")) return "Email Campaigns";
-  if (path.includes("/leads")) return "Leads Management";
-  if (path.includes("/email_directory")) return "Email Directory";
+    // Email pages
+    if (path.includes("/smtp")) return "SMTP Configuration";
+    if (path.includes("/users")) return "Manage Users";
+    if (path.includes("/campaigns")) return "Email Campaigns";
+    if (path.includes("/leads")) return "Leads Management";
+    if (path.includes("/email_directory")) return "Email Directory";
 
-  // ⭐ Billing & Settings (Missing earlier — now added)
-  if (path.includes("/payment_billing")) return "Billing & Payments";
-  if (path.includes("/plan_management")) return "Plan Management";
-  if (path.includes("/razorpay_config")) return "Razorpay Configuration";
-  if (path.includes("/user_profile")) return "User Profile"
+    // ⭐ Billing & Settings (Missing earlier — now added)
+    if (path.includes("/payment_billing")) return "Billing & Payments";
+    if (path.includes("/plan_management")) return "Plan Management";
+    if (path.includes("/razorpay_config")) return "Razorpay Configuration";
+    if (path.includes("/user_profile")) return "User Profile"
 
-  // Dashboard overview
-  if (path === "/dashboard" || path.includes("/overview"))
-    return "Dashboard Overview";
+    // Dashboard overview
+    if (path === "/dashboard" || path.includes("/overview"))
+      return "Dashboard Overview";
 
-  return "Dashboard";
-};
+    return "Dashboard";
+  };
 
 
   // Current dynamic title
@@ -100,11 +100,20 @@ const getPageTitle = (path: string) => {
                 onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
                 className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <img
-                  src="https://i.pravatar.cc/40"
-                  alt="User"
-                  className="w-9 h-9 rounded-full border-2 border-yellow-500"
-                />
+                {user?.photo?.url ? (
+                  <img
+                    src={user.photo.url}
+                    alt={user?.username || "User"}
+                    className="w-9 h-9 rounded-full border-2 border-yellow-500 object-cover"
+                  />
+                ) : (
+                  <div
+                    className="w-9 h-9 rounded-full border-2 border-yellow-500 bg-gray-200 flex items-center justify-center text-gray-800 font-semibold uppercase"
+                  >
+                    {user?.username?.charAt(0) || "U"}
+                  </div>
+                )}
+
                 <div className="hidden md:flex flex-col items-start">
                   <span className="text-gray-800 font-medium text-sm flex items-center gap-1">
                     {user?.username}
@@ -114,7 +123,7 @@ const getPageTitle = (path: string) => {
                       <CheckCircle
                         size={14}
                         className="text-blue-500"
-                       
+
                       />
                     )}
                   </span>

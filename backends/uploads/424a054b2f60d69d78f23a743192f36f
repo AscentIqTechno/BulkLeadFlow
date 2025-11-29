@@ -1,0 +1,4 @@
+name,email,isConfidential
+John Doe,john@example.com,true
+Jane Smith,jane@example.com,false
+Mike Johnson,mike@example.com,true

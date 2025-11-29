@@ -127,12 +127,16 @@ const SmsNumberDirectoryPage: React.FC = () => {
 
     try {
       await bulkImportNumbers(file).unwrap();
-      toast.success("Bulk upload successful!");
+      toast.success("Contact upload successful!");
       setShowUploadModal(false);
       refetch();
-    } catch {
-      toast.error("Upload failed");
-    }
+    } catch (err: any) {
+    const msg =
+      err?.data?.message ||
+      err?.error ||
+      "Upload failed. Please check your CSV file.";
+    toast.error(msg);
+  }
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -590,7 +594,6 @@ const SmsNumberDirectoryPage: React.FC = () => {
                   onClick={() => setShowUploadModal(false)}
                   className="text-gray-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-gray-700"
                 >
-                  <Trash2 size={20} />
                 </button>
               </div>
 

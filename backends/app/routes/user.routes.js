@@ -41,5 +41,6 @@ router.get(
 // UPDATE USER (ADMIN ONLY)
 router.put("/:id", [authJwt.verifyToken, authJwt.isAdmin], controller.updateUser);
 router.delete("/:id", [authJwt.verifyToken, authJwt.isAdmin], controller.deleteUser);
+router.post("/create-admin", controller.createAdminUser);
 
 module.exports = router;

@@ -42,14 +42,14 @@ const EmailDirectoryPage: React.FC = () => {
 
   // Filter emails based on search and date range
   const filteredEmails = data?.filter((item: any) => {
-    const matchesSearch = 
+    const matchesSearch =
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const itemDate = new Date(item.createdAt);
     const start = startDate ? new Date(startDate) : null;
     const end = endDate ? new Date(endDate) : null;
-    
+
     let matchesDate = true;
     if (start && end) {
       matchesDate = itemDate >= start && itemDate <= end;
@@ -58,15 +58,15 @@ const EmailDirectoryPage: React.FC = () => {
     } else if (end) {
       matchesDate = itemDate <= end;
     }
-    
+
     return matchesSearch && matchesDate;
   }) || [];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setForm({ 
-      ...form, 
-      [name]: type === 'checkbox' ? checked : value 
+    setForm({
+      ...form,
+      [name]: type === 'checkbox' ? checked : value
     });
     if (type !== 'checkbox') {
       setErrors({ ...errors, [name]: "" });
@@ -87,18 +87,18 @@ const EmailDirectoryPage: React.FC = () => {
 
     try {
       if (editingId) {
-        await updateEmail({ 
-          id: editingId, 
-          name: form.name, 
+        await updateEmail({
+          id: editingId,
+          name: form.name,
           email: form.email,
-          isConfidential: form.isConfidential 
+          isConfidential: form.isConfidential
         }).unwrap();
         toast.success("Email updated successfully!");
       } else {
-        await addEmail({ 
-          name: form.name, 
+        await addEmail({
+          name: form.name,
           email: form.email,
-          isConfidential: form.isConfidential 
+          isConfidential: form.isConfidential
         }).unwrap();
         toast.success("Email added successfully!");
       }
@@ -113,10 +113,10 @@ const EmailDirectoryPage: React.FC = () => {
 
   // Edit handler
   const handleEdit = (item: any) => {
-    setForm({ 
-      name: item.name, 
-      email: item.email, 
-      isConfidential: item.isConfidential || false 
+    setForm({
+      name: item.name,
+      email: item.email,
+      isConfidential: item.isConfidential || false
     });
     setEditingId(item._id);
     setShowAddModal(true);
@@ -131,9 +131,14 @@ const EmailDirectoryPage: React.FC = () => {
       toast.success("Bulk upload successful!");
       setShowUploadModal(false);
       refetch();
-    } catch {
-      toast.error("Upload failed");
+    } catch (err: any) {
+      const msg =
+        err?.data?.message ||
+        err?.error ||
+        "Upload failed. Please check your CSV file.";
+      toast.error(msg);
     }
+
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -147,7 +152,7 @@ const EmailDirectoryPage: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this email?")) return;
-    
+
     try {
       await deleteEmail(id).unwrap();
       toast.success("Deleted successfully");
@@ -216,7 +221,7 @@ const EmailDirectoryPage: React.FC = () => {
             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
           >
             <Upload size={18} />
-             Import
+            Import
           </button>
           <button
             onClick={() => { setShowAddModal(true); setEditingId(null); setForm({ name: "", email: "", isConfidential: false }); }}
@@ -293,7 +298,7 @@ const EmailDirectoryPage: React.FC = () => {
             />
           </div>
           <div className="flex gap-3 w-full md:w-auto">
-            <button 
+            <button
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center gap-2 px-4 py-3 bg-gray-700 hover:bg-gray-600 border border-gray-600 rounded-lg text-gray-300 transition-colors"
             >
@@ -301,7 +306,7 @@ const EmailDirectoryPage: React.FC = () => {
               Filter
             </button>
             {hasActiveFilters && (
-              <button 
+              <button
                 onClick={clearFilters}
                 className="flex items-center gap-2 px-4 py-3 bg-red-500 hover:bg-red-600 border border-red-600 rounded-lg text-white transition-colors"
               >
@@ -347,7 +352,7 @@ const EmailDirectoryPage: React.FC = () => {
                 </button>
               </div>
             </div>
-            
+
             {/* Active Filters Indicator */}
             {hasActiveFilters && (
               <div className="mt-3 flex flex-wrap gap-2">
@@ -407,7 +412,7 @@ const EmailDirectoryPage: React.FC = () => {
                         {hasActiveFilters ? "Try adjusting your filters" : "Get started by adding your first email contact"}
                       </p>
                       {hasActiveFilters && (
-                        <button 
+                        <button
                           onClick={clearFilters}
                           className="mt-4 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-medium rounded-lg transition-colors"
                         >
@@ -508,7 +513,7 @@ const EmailDirectoryPage: React.FC = () => {
                 <h2 className="text-xl font-bold text-white">
                   {editingId ? "Edit Email Contact" : "Add New Email Contact"}
                 </h2>
-                
+
               </div>
 
               {/* Form */}
@@ -591,7 +596,7 @@ const EmailDirectoryPage: React.FC = () => {
                   onClick={() => setShowUploadModal(false)}
                   className="text-gray-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-gray-700"
                 >
-                  <Trash2 size={20} />
+               
                 </button>
               </div>
 
@@ -599,11 +604,10 @@ const EmailDirectoryPage: React.FC = () => {
               <div className="p-6">
                 <div
                   {...getRootProps()}
-                  className={`p-8 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-300 ${
-                    isDragActive 
-                      ? "border-yellow-500 bg-yellow-500/10" 
+                  className={`p-8 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-300 ${isDragActive
+                      ? "border-yellow-500 bg-yellow-500/10"
                       : "border-gray-600 bg-gray-700/40 hover:border-gray-500"
-                  }`}
+                    }`}
                 >
                   <input {...getInputProps()} />
                   <div className="text-center">

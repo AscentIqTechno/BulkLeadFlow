@@ -224,7 +224,7 @@ exports.signin = async (req, res) => {
       email: user.email,
       phone:user.phone,
       roles: authorities,
-      photo:user.photo,
+      photo:user.profileImage,
       accessToken: token,
     });
 

@@ -5,12 +5,14 @@ import {
   useRegisterUserMutation,
   useUpdateUserMutation,
   useDeleteUserMutation,
+  useCreateAdminMutation,
 } from "@/redux/api/authApi";
 import { toast } from "react-hot-toast";
 
 const UsersPage = () => {
   const { data, isLoading, refetch } = useFetchUsersQuery(null);
-  const [registerUser] = useRegisterUserMutation();
+const [createAdmin] = useCreateAdminMutation();
+
   const [updateUser] = useUpdateUserMutation();
   const [deleteUser] = useDeleteUserMutation();
 
@@ -74,7 +76,7 @@ const UsersPage = () => {
 
         toast.success("User updated successfully");
       } else {
-        await registerUser({
+        await createAdmin({
           username: form.name,
           email: form.email,
           phone: form.phone,

@@ -18,7 +18,6 @@ router.post(
 // ---------------------------
 router.get(
   "/config",
-  [authJwt.verifyToken, authJwt.isAdmin],
   controller.getAllRazorpayConfigs
 );
 
@@ -27,7 +26,6 @@ router.get(
 // ---------------------------
 router.get(
   "/config/:id",
-  [authJwt.verifyToken, authJwt.isAdmin],
   controller.getRazorpayConfigById
 );
 
@@ -54,7 +52,6 @@ router.delete(
 // ---------------------------
 router.get(
   "/config-active",
-  [authJwt.verifyToken],
   controller.getActiveConfig
 );
 

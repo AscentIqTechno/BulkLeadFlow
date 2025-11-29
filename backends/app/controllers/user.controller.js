@@ -1,6 +1,8 @@
 const db = require("../models");
 const User = db.user;
 const Role = db.role;
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 
 exports.allAccess = (req, res) => {
   res.status(200).send("Public Content.");
@@ -99,3 +101,51 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
+exports.createAdminUser = async (req, res) => {
+  try {
+    const { username, email, password, phone } = req.body;
+
+    if (!username || !email || !password) {
+      return res.status(400).send({
+        message: "username, email, and password are required",
+      });
+    }
+
+    // Check if user already exists
+    const exists = await User.findOne({ email });
+    if (exists) {
+      return res.status(400).send({ message: "User already exists" });
+    }
+
+    // Find admin role
+    const adminRole = await Role.findOne({ name: "admin" });
+    if (!adminRole) {
+      return res.status(500).send({
+        message: "Admin role not found in database. Seed roles first.",
+      });
+    }
+
+    // Create admin user
+    const adminUser = new User({
+      username,
+      email,
+      phone: phone || "",
+      password: bcrypt.hashSync(password, 8),
+      roles: [adminRole._id],
+    });
+
+    await adminUser.save();
+
+    res.status(201).send({
+      message: "Admin user created successfully",
+      user: {
+        id: adminUser._id,
+        username: adminUser.username,
+        email: adminUser.email,
+      },
+    });
+
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+};

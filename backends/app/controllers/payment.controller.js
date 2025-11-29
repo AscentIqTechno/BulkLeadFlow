@@ -36,6 +36,7 @@ exports.createOrder = async (req, res) => {
     }
 
     const razorConfig = await RazorpayConfig.findOne({ isActive: true }).select("+keySecret");
+    console.log(razorConfig)
     if (!razorConfig) {
       return res.status(400).send({ success: false, message: "Razorpay config missing" });
     }

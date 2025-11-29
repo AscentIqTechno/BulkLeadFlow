@@ -136,47 +136,93 @@ exports.deleteNumber = async (req, res) => {
 // ==========================================
 exports.bulkImport = async (req, res) => {
   try {
-    if (!req.file)
+    if (!req.file) {
       return res.status(400).json({ message: "CSV file missing" });
+    }
 
     const jsonArray = await csv().fromFile(req.file.path);
 
-    if (!jsonArray.length)
+    if (!jsonArray.length) {
       return res.status(400).json({ message: "CSV file is empty" });
+    }
 
+    // -------------------------------
+    // ✅ CHECK REQUIRED CSV COLUMNS
+    // -------------------------------
+    const sample = jsonArray[0];
+
+    const numberColumn =
+      sample.number ||
+      sample.Number ||
+      sample.Contact;
+
+    if (!numberColumn) {
+      return res.status(400).json({
+        message:
+          "Invalid CSV format. Required 'number' column missing. Allowed: number, Number, Contact",
+      });
+    }
+
+    // -------------------------------
     // Normalize CSV fields
+    // -------------------------------
     const normalizedArray = jsonArray.map((item) => ({
       userId: req.userId,
-      number: item.number || item.Number || item.Contact, // map correct CSV column
+      number: item.number || item.Number || item.Contact || null,
       name: item.name || item.Name || "",
-      isConfidential: item.isConfidential === 'true' || item.isConfidential === true || false,
+      isConfidential:
+        item.isConfidential === "true" ||
+        item.isConfidential === true ||
+        false,
     }));
 
-    // Filter out entries with missing number
+    // Remove rows without valid number
     const validEntries = normalizedArray.filter((item) => item.number);
 
-    // Get existing numbers for this user
+    if (!validEntries.length) {
+      return res.status(400).json({
+        message:
+          "Incorrect CSV format. No valid number entries found. Check your CSV.",
+      });
+    }
+
+    // -------------------------------
+    // Find duplicates
+    // -------------------------------
     const existingNumbers = await NumberDirectory.find(
-      { userId: req.userId, number: { $in: validEntries.map((i) => i.number) } },
+      {
+        userId: req.userId,
+        number: { $in: validEntries.map((i) => i.number) },
+      },
       { number: 1, _id: 0 }
     ).lean();
 
     const existingSet = new Set(existingNumbers.map((i) => i.number));
 
-    // Only insert new numbers
-    const newEntries = validEntries.filter((item) => !existingSet.has(item.number));
+    const newEntries = validEntries.filter(
+      (item) => !existingSet.has(item.number)
+    );
 
-    if (!newEntries.length)
-      return res.status(200).json({ message: "No new numbers to import" });
+    if (!newEntries.length) {
+      return res.status(200).json({
+        message: "No new numbers to import",
+      });
+    }
 
     const result = await NumberDirectory.insertMany(newEntries);
 
+    // -------------------------------
+    // SUCCESS ✔️
+    // -------------------------------
     res.status(200).json({
-      message: "Numbers imported",
+      message: "Contact import successful",
       count: result.length,
     });
 
   } catch (err) {
-    res.status(500).json({ message: "Failed to import numbers", error: err.message });
+    res.status(500).json({
+      message: "Failed to import numbers",
+      error: err.message,
+    });
   }
 };

@@ -5,7 +5,7 @@ export const smsApi = createApi({
 
   baseQuery: fetchBaseQuery({
     baseUrl: "http://localhost:4000/api",
-     prepareHeaders: (headers, { getState }) => {
+    prepareHeaders: (headers, { getState }) => {
       const token = (getState() as any)?.auth?.token;
       if (token) headers.set("x-access-token", token);
       return headers;
@@ -49,6 +49,15 @@ export const smsApi = createApi({
       }),
       invalidatesTags: ["SmsConfig"],
     }),
+
+    // ✅ TEST SMS CONNECTION (New API)
+    testSmsConnection: builder.mutation({
+      query: (body) => ({
+        url: "/sms_gateway_config/test_connection",
+        method: "POST",
+        body, // { ip, port }
+      }),
+    }),
   }),
 });
 
@@ -57,4 +66,5 @@ export const {
   useAddSmsConfigMutation,
   useUpdateSmsConfigMutation,
   useDeleteSmsConfigMutation,
+  useTestSmsConnectionMutation, // ✅ export hook
 } = smsApi;

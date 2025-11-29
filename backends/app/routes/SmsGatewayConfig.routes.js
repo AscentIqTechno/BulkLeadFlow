@@ -12,6 +12,12 @@ router.post(
   controller.createSmsGateway
 );
 
+router.post(
+  "/sms_gateway_config/test_connection",
+  verifyToken,
+  controller.testSmsGatewayConnection
+);
+
 // ➤ GET all SMS Gateway configs for logged-in user → no limit decrement
 router.get("/sms_gateway_config", verifyToken, controller.getMySmsConfigs);
 

@@ -5,6 +5,7 @@ import {
   useGetSmsConfigQuery,
   useUpdateSmsConfigMutation,
   useDeleteSmsConfigMutation,
+  useTestSmsConnectionMutation,
 } from "@/redux/api/smsApi";
 import { Edit, Trash2, Server, Shield, Phone, HelpCircle, ExternalLink } from "lucide-react";
 
@@ -35,6 +36,7 @@ const SmsGatewayConfigPage: React.FC = () => {
   const [addConfig] = useAddSmsConfigMutation();
   const [updateConfig] = useUpdateSmsConfigMutation();
   const [deleteConfig] = useDeleteSmsConfigMutation();
+  const [testSmsConfig] =useTestSmsConnectionMutation();
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showGuide, setShowGuide] = useState(false);
@@ -68,20 +70,20 @@ const SmsGatewayConfigPage: React.FC = () => {
     if (!validate()) return;
     try {
       if (editingId) {
-        await updateConfig({ 
-          id: editingId, 
-          username: form.username, 
-          contactNumber: form.contactNumber, 
-          ip: form.ip, 
-          port: form.port 
+        await updateConfig({
+          id: editingId,
+          username: form.username,
+          contactNumber: form.contactNumber,
+          ip: form.ip,
+          port: form.port
         }).unwrap();
         toast.success("Gateway configuration updated!");
       } else {
-        await addConfig({ 
-          username: form.username, 
-          contactNumber: form.contactNumber, 
-          ip: form.ip, 
-          port: form.port 
+        await addConfig({
+          username: form.username,
+          contactNumber: form.contactNumber,
+          ip: form.ip,
+          port: form.port
         }).unwrap();
         toast.success("Gateway configuration saved!");
       }
@@ -115,6 +117,26 @@ const SmsGatewayConfigPage: React.FC = () => {
     }
   };
 
+  const handleTest = async () => {
+    if (!validate()) return;
+
+    try {
+      const payload = {
+        username: form.username,
+        contactNumber: form.contactNumber,
+        ip: form.ip,
+        port: form.port
+      };
+
+      const res = await testSmsConfig(payload).unwrap();
+
+      toast.success(res?.message || "Test SMS sent successfully!");
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Test SMS failed!");
+    }
+  };
+
+
   const handleCancel = () => {
     setForm({ username: "", contactNumber: "", ip: "", port: "8080" });
     setEditingId(null);
@@ -141,9 +163,9 @@ const SmsGatewayConfigPage: React.FC = () => {
             Configure your SMS gateway for sending campaigns
           </p>
         </div>
-        
+
         {/* Guide Toggle Button */}
-        <button 
+        <button
           onClick={() => setShowGuide(!showGuide)}
           className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 border border-gray-600 text-white rounded-lg transition-colors duration-200"
         >
@@ -159,7 +181,7 @@ const SmsGatewayConfigPage: React.FC = () => {
             <Phone className="h-5 w-5 text-blue-400" />
             <h3 className="text-lg font-semibold text-white">Simple SMS Gateway Setup Guide</h3>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Step by Step Instructions */}
             <div className="space-y-4">
@@ -169,9 +191,9 @@ const SmsGatewayConfigPage: React.FC = () => {
                   <span className="font-medium text-white">Install the App</span>
                   <p className="text-blue-100 ml-6 mt-1">
                     Download and install the app from{" "}
-                    <a 
-                      href="https://play.google.com/store/apps/details?id=com.pabrikaplikasi.simplesmsgateway" 
-                      target="_blank" 
+                    <a
+                      href="https://play.google.com/store/apps/details?id=com.pabrikaplikasi.simplesmsgateway"
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-300 hover:text-blue-200 underline flex items-center gap-1 inline-flex"
                     >
@@ -269,7 +291,7 @@ const SmsGatewayConfigPage: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             {/* Form Content - Scrollable */}
             <div className="p-6 flex-1 overflow-y-auto">
               <div className="space-y-4">
@@ -298,11 +320,10 @@ const SmsGatewayConfigPage: React.FC = () => {
                               ? "192.168.101.121"
                               : "8080"
                       }
-                      className={`w-full mt-1 bg-gray-700 border text-white px-3 py-2 rounded-lg ${
-                        (errors as any)[field] 
-                          ? "border-red-500" 
+                      className={`w-full mt-1 bg-gray-700 border text-white px-3 py-2 rounded-lg ${(errors as any)[field]
+                          ? "border-red-500"
                           : "border-gray-600"
-                      } focus:border-yellow-500 focus:outline-none transition-colors`}
+                        } focus:border-yellow-500 focus:outline-none transition-colors`}
                     />
                     {(errors as any)[field] && (
                       <p className="text-red-500 text-sm mt-1">{(errors as any)[field]}</p>
@@ -312,12 +333,22 @@ const SmsGatewayConfigPage: React.FC = () => {
 
                 {/* Action Buttons */}
                 <div className="flex gap-3 pt-4">
+
+                  {/* Test Button */}
+                  <button
+                    onClick={handleTest}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex-1"
+                  >
+                    Test
+                  </button>
+
                   <button
                     onClick={handleCancel}
                     className="px-4 py-2 bg-gray-700 hover:bg-gray-600 border border-gray-600 text-white rounded-lg transition-colors flex-1"
                   >
                     Cancel
                   </button>
+
                   <button
                     onClick={handleSave}
                     className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors flex-1"
@@ -325,6 +356,7 @@ const SmsGatewayConfigPage: React.FC = () => {
                     {editingId ? "Update" : "Save"}
                   </button>
                 </div>
+
               </div>
             </div>
           </div>
@@ -383,14 +415,14 @@ const SmsGatewayConfigPage: React.FC = () => {
                 )}
               </div>
             </div>
-            
+
             {/* List Content - Scrollable */}
             <div className="p-6 flex-1 overflow-y-auto">
               {configs.length > 0 ? (
                 <div className="space-y-4">
                   {configs.map((config) => (
-                    <div 
-                      key={config._id} 
+                    <div
+                      key={config._id}
                       className="bg-gray-700/50 rounded-lg p-4 border border-gray-600 hover:border-gray-500 transition-colors"
                     >
                       <div className="flex items-center justify-between">

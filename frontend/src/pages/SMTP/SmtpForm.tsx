@@ -61,8 +61,10 @@ const SmtpForm = ({ editData, onSuccess }) => {
   const onSubmit = async (formData) => {
     try {
       if (editData) {
+        console.log(formData,"formData")
         // ---- UPDATE ----
-        await updateSmtp({ id: editData._id, body: formData }).unwrap();
+      await updateSmtp({ id: editData._id, data: formData }).unwrap();
+
         toast.success("SMTP configuration updated successfully");
       } else {
         // ---- CREATE ----

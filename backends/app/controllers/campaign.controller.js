@@ -37,8 +37,8 @@ exports.createAndSendCampaign = async (req, res) => {
     if (recipients) {
       if (Array.isArray(recipients)) {
         recipientList = recipients;
-      } else if (typeof recipients === "string") {
-        recipientList = recipients.split(",").map((r) => r.trim()).filter(Boolean);
+      } else {
+        recipientList = recipients.split(",").map(r => r.trim()).filter(Boolean);
       }
     }
 
@@ -46,11 +46,37 @@ exports.createAndSendCampaign = async (req, res) => {
       return res.status(400).json({ message: "All required fields must be provided." });
     }
 
-    // SMTP config
+    // ========== SMTP Config ==========
     const smtpConfig = await SmtpConfig.findOne({ _id: smtpId, userId });
-    if (!smtpConfig) return res.status(400).json({ message: "SMTP configuration not found" });
+    if (!smtpConfig) {
+      return res.status(400).json({ message: "SMTP configuration not found" });
+    }
 
-    // Fetch subscription to track usage
+    // ==================================================
+    //   🔥 STEP 1 — VERIFY SMTP LOGIN BEFORE SENDING
+    // ==================================================
+    const testTransporter = nodemailer.createTransport({
+      host: smtpConfig.host,
+      port: smtpConfig.port,
+      secure: smtpConfig.secure,
+      auth: {
+        user: smtpConfig.username,
+        pass: smtpConfig.password,
+      },
+    });
+
+    try {
+      await testTransporter.verify(); // check username/password are correct
+    } catch (smtpErr) {
+      console.error("SMTP LOGIN FAILED:", smtpErr.message);
+      return res.status(400).json({
+        success: false,
+        message: "SMTP Login failed. Please check username/password.",
+        smtpError: smtpErr.message,
+      });
+    }
+
+    // ========== Subscription Usage (unchanged) ==========
     const subscription = await Subscription.findOne({ user: userId, isActive: true });
     const planUsage = subscription?.planUsage;
     const planLimits = subscription?.planLimits;
@@ -63,54 +89,69 @@ exports.createAndSendCampaign = async (req, res) => {
     if (remainingQuota <= 0) {
       return res.status(403).json({
         success: false,
-        message: "Email limit reached — cannot send any more emails this month"
+        message: "Email limit reached — cannot send any more emails this month",
       });
     }
 
-    // Optionally slice recipients to remaining quota
     const emailsToSend = recipientList.slice(0, remainingQuota);
-    const blockedEmails = recipientList.slice(remainingQuota);
 
-    const transporter = nodemailer.createTransport({
-      host: smtpConfig.host,
-      port: smtpConfig.port,
-      secure: smtpConfig.secure,
-      auth: { user: smtpConfig.username, pass: smtpConfig.password }
-    });
+    const transporter = testTransporter; // verified transporter
 
     let sentCount = 0;
-    const total = recipientList.length;
+    let insertedDirIds = [];
 
+    // ==================================================
+    //   🔥 STEP 2 — SEND EMAILS (STOP ON FIRST FAILURE)
+    // ==================================================
     for (const email of emailsToSend) {
       try {
         const extractedName = extractNameFromEmailJS(email);
 
-        await EmailDirectory.findOneAndUpdate(
+        const dirItem = await EmailDirectory.findOneAndUpdate(
           { userId, email },
-          { name: extractedName, email, userId },
-          { upsert: true }
+          { userId, email, name: extractedName },
+          { upsert: true, new: true }
         );
+
+        insertedDirIds.push(dirItem._id);
 
         await transporter.sendMail({
           from: smtpConfig.fromEmail,
           to: email,
           subject,
           text: message,
-          attachments: attachments.map((f) => ({
+          attachments: attachments.map(f => ({
             filename: f.originalname,
-            content: f.buffer
-          }))
+            content: f.buffer,
+          })),
         });
 
         sentCount++;
-        console.log(`Sent ${sentCount}/${emailsToSend.length}`);
-
       } catch (err) {
-        console.error(`Failed email ${email}:`, err.message);
+        console.error(`FAILED EMAIL ${email}:`, err.message);
+
+        // Cleanup (Rollback Directory Insert)
+        await EmailDirectory.deleteMany({ _id: { $in: insertedDirIds } });
+
+        return res.status(400).json({
+          success: false,
+          message: "Email sending failed",
+          failedEmail: email,
+          error: err.message,
+        });
       }
     }
 
-    // Save campaign with all recipients, mark blocked ones
+    // ==================================================
+    //   🔥 STEP 3 — SAVE CAMPAIGN ONLY IF ALL EMAILS SENT
+    // ==================================================
+    if (sentCount !== emailsToSend.length) {
+      return res.status(400).json({
+        success: false,
+        message: "Some emails failed — campaign not created",
+      });
+    }
+
     const campaign = new Campaign({
       userId,
       name,
@@ -118,32 +159,34 @@ exports.createAndSendCampaign = async (req, res) => {
       smtpId,
       recipients: recipientList,
       message,
-      status: blockedEmails.length > 0 ? "partial" : "sent",
-      blockedRecipients: blockedEmails
+      status: "sent",
     });
 
     const savedCampaign = await campaign.save();
 
-    // Update subscription usage
+    // ========== Subscription Update (unchanged) ==========
     if (subscription && planUsage) {
       planUsage.emailsSent = (planUsage.emailsSent || 0) + sentCount;
       subscription.markModified("planUsage");
       await subscription.save();
     }
 
-    res.status(201).json({
-      message: "Campaign sent and saved successfully",
-      campaign: savedCampaign,
-      totalRecipients: total,
+    return res.status(201).json({
+      success: true,
+      message: "Campaign sent successfully",
       sentCount,
-      blockedRecipients: blockedEmails.length
+      campaign: savedCampaign,
     });
 
   } catch (err) {
     console.error("SEND CAMPAIGN ERROR:", err);
-    res.status(500).json({ message: "Error sending campaign", error: err.message });
+    res.status(500).json({
+      message: "Error sending campaign",
+      error: err.message,
+    });
   }
 };
+
 
 /**
  * Fetch campaigns for logged-in user

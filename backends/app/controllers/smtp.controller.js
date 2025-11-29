@@ -53,8 +53,39 @@ exports.createSmtp = async (req, res) => {
   }
 };
 
+// ➤ UPDATE SMTP (GUARANTEED WORKING)
+exports.updateSmtp = async (req, res) => {
+  try {
+    const smtp = await SmtpConfig.findOne({
+      _id: req.params.id,
+      userId: req.userId
+    });
 
+    if (!smtp) {
+      return res.status(404).send({ message: "SMTP not found" });
+    }
 
+    // Allowed updatable fields
+    const fields = ["host", "port", "username", "password", "fromEmail", "secure"];
+
+    fields.forEach((key) => {
+      if (req.body[key] !== undefined && req.body[key] !== "") {
+        smtp[key] = req.body[key];
+      }
+    });
+
+    // Save document (always applies update)
+    await smtp.save();
+
+    return res.status(200).send({
+      message: "SMTP updated successfully",
+      smtp
+    });
+  } catch (err) {
+    console.error("SMTP UPDATE ERROR:", err);
+    res.status(500).send({ message: err.message });
+  }
+};
 
 // ➤ READ (GET Logged-in User SMTP List)
 exports.getMySmtps = async (req, res) => {
@@ -67,23 +98,52 @@ exports.getMySmtps = async (req, res) => {
 };
 
 // ➤ UPDATE SMTP
+// ➤ UPDATE SMTP
 exports.updateSmtp = async (req, res) => {
   try {
-    const updated = await SmtpConfig.findOneAndUpdate(
-      { _id: req.params.id, userId: req.userId },
-      req.body,
-      { new: true }
-    );
+    const smtp = await SmtpConfig.findOne({
+      _id: req.params.id,
+      userId: req.userId
+    });
 
-    if (!updated) {
+    if (!smtp) {
       return res.status(404).send({ message: "SMTP not found" });
     }
 
-    res.status(200).send({ message: "Updated successfully", smtp: updated });
+    // Allowed Fields
+    const allowedFields = [
+      "host",
+      "port",
+      "username",
+      "password",
+      "fromEmail",
+      "secure"
+    ];
+
+    // Update only allowed fields & ignore empty fields
+    allowedFields.forEach(field => {
+      if (req.body[field] !== undefined && req.body[field] !== "") {
+        smtp[field] = req.body[field];
+      }
+    });
+
+    // If password is empty → DO NOT overwrite existing password
+    if (!req.body.password) {
+      delete smtp.password; // prevents replacing with empty value
+    }
+
+    await smtp.save();
+
+    res.status(200).send({
+      message: "SMTP updated successfully",
+      smtp
+    });
+
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
 };
+
 
 // ➤ DELETE SMTP
 exports.deleteSmtp = async (req, res) => {

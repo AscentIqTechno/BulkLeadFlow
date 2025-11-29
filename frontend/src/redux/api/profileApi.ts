@@ -2,6 +2,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 // Types
 export interface User {
+  subscription: any;
   _id: string;
   username: string;
   email: string;
